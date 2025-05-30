@@ -10,15 +10,11 @@ export default function Navbar() {
           <div className="logo flex items-center">
             <h1 className="text-heading text-[24px]">GuruBantu</h1>
           </div>
-          <ul className="flex items-center gap-4">
-            {/* <li>
-              <Link href="/" className="text-[#084734] text-lg font-semibold">Home</Link>
-            </li> */}
-          </ul>
+      
           <div className="flex items-center gap-6">
             <Inbox color="#084734" />
             <Avatar>
-              <AvatarImage src="./image.png"/>
+              <AvatarImage src="/image.png"/>
             </Avatar>
           </div>
         </div>

@@ -28,6 +28,6 @@
 
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/page.tsx.old"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/page.tsx.old", "app/forum/create/page.txr", "app/dashboard/page.text"],
   "exclude": ["node_modules"]
 }

@@ -1,236 +1,71 @@
-import { notFound } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Textarea } from "@/components/ui/textarea"
-import { Separator } from "@/components/ui/separator"
-import { MessageSquare, Share2, FileText, Download, ChevronUp, ChevronDown, Reply } from "lucide-react"
-import AuthenticatedLayout from "@/components/authenticated-layout"
-import { mockThreads, currentUser } from "@/lib/mock-data"
+import UserLayout from "@/components/layout/UserLayout";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { ArrowBigDownDash, ArrowBigUpDash, MessageSquareText } from "lucide-react";
 
-interface ThreadDetailPageProps {
-  params: Promise<{ id: string }>
-}
-
-export default async function ThreadDetailPage({ params }: ThreadDetailPageProps) {
-  const { id } = await params
-  const thread = mockThreads.find((t) => t.id === id)
-
-  if (!thread) {
-    notFound()
-  }
-
+export default function DetailForumPage() {
   return (
-    <AuthenticatedLayout>
-      <div className="p-8 max-w-4xl mx-auto">
-        {/* Thread Header */}
-        <Card className="border-0 shadow-lg bg-white mb-6">
-          <CardHeader>
-            <div className="flex items-start space-x-4">
-              <Avatar className="w-12 h-12">
-                <AvatarImage src={thread.author.avatar || "/placeholder.svg"} />
-                <AvatarFallback>
-                  {thread.author.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-2">
-                  <h1 className="text-2xl font-bold text-gray-800">{thread.title}</h1>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                    {thread.author.role === "guru" ? "Guru" : "Relawan"}
-                  </Badge>
-                </div>
-                <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
-                  <span>oleh {thread.author.name}</span>
-                  <span>
-                    {thread.author.subject} • {thread.author.level}
-                  </span>
-                  <span>{new Date(thread.createdAt).toLocaleDateString("id-ID")}</span>
-                </div>
-                <div className="flex space-x-2 mb-4">
-                  {thread.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="prose max-w-none mb-6">
-              <p className="text-gray-700 leading-relaxed">{thread.content}</p>
-            </div>
+    <UserLayout>
+      <div className="container p-8 bg-white rounded-lg h-screen overflow-y-auto">
 
-            {/* File Attachment */}
-            {thread.hasFile && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-800">{thread.fileName}</p>
-                    <p className="text-sm text-gray-500">PDF • 2.5 MB</p>
-                  </div>
-                  <Button size="sm" variant="outline">
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                </div>
-              </div>
-            )}
+        {/* Title */}
+        <h1 className="text-4xl font-bold mb-4 font-jakarta">General Discussion</h1>
 
-            {/* Action Buttons */}
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                <ChevronUp className="w-4 h-4" />
-                <span>{thread.votes}</span>
-              </Button>
-              <Button variant="outline" size="sm">
-                <ChevronDown className="w-4 h-4" />
-              </Button>
-              <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                <MessageSquare className="w-4 h-4" />
-                <span>{thread.comments.length} Komentar</span>
-              </Button>
-              <Button variant="outline" size="sm">
-                <Share2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Discussion */}
+        <div className="mt-10 flex flex-col gap-6">
 
-        {/* Comments Section */}
-        <Card className="border-0 shadow-lg bg-white">
-          <CardHeader>
-            <h2 className="text-xl font-semibold text-gray-800">Komentar ({thread.comments.length})</h2>
-          </CardHeader>
-          <CardContent>
-            {/* Add Comment */}
-            <div className="mb-6">
-              <div className="flex items-start space-x-3">
+          {/* Discussion Card */}
+          <div className="px-5 py-7 bg-white rounded-lg border border-gray-200 mb-6">
+
+            {/* Header */}
+            <div className="header flex items-start justify-between mb-4">
+              {/* Profile */}
+              <div className="flex items-center gap-4">
                 <Avatar className="w-10 h-10">
-                  <AvatarImage src={currentUser.avatar || "/placeholder.svg"} />
-                  <AvatarFallback>
-                    {currentUser.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
+                  <AvatarImage src="./image.png"/>
                 </Avatar>
-                <div className="flex-1">
-                  <Textarea
-                    placeholder="Tulis komentar Anda..."
-                    className="mb-3 border-gray-200 focus:border-blue-500"
-                  />
-                  <Button
-                    size="sm"
-                    className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800"
-                  >
-                    Kirim Komentar
-                  </Button>
+                <div className="flex flex-col font-jakarta -pace-y-1">
+                  <h2 className="text-lg font-semibold text-gray-800">Terrano</h2>
+                  <p className="text-sm font-semibold text-gray-500">Institut Teknologi Kalimantan</p>
                 </div>
+              </div>
+              {/* Date */}
+              <div className="font-geist text-sm font-medium text-gray-500">
+                <p>Posted on: 12/10/2023</p>
               </div>
             </div>
 
-            <Separator className="mb-6" />
-
-            {/* Comments List */}
-            <div className="space-y-6">
-              {thread.comments.map((comment) => (
-                <div key={comment.id} className="space-y-4">
-                  {/* Main Comment */}
-                  <div className="flex items-start space-x-3">
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={comment.author.avatar || "/placeholder.svg"} />
-                      <AvatarFallback>
-                        {comment.author.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="font-medium text-gray-800">{comment.author.name}</span>
-                          <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-                            {comment.author.role === "guru" ? "Guru" : "Relawan"}
-                          </Badge>
-                          <span className="text-xs text-gray-500">
-                            {new Date(comment.createdAt).toLocaleDateString("id-ID")}
-                          </span>
-                        </div>
-                        <p className="text-gray-700">{comment.content}</p>
-                      </div>
-                      <div className="flex items-center space-x-4 mt-2">
-                        <Button variant="ghost" size="sm" className="text-xs">
-                          <ChevronUp className="w-3 h-3 mr-1" />
-                          {comment.votes}
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-xs">
-                          <ChevronDown className="w-3 h-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-xs">
-                          <Reply className="w-3 h-3 mr-1" />
-                          Balas
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Replies */}
-                  {comment.replies && comment.replies.length > 0 && (
-                    <div className="ml-12 space-y-4">
-                      {comment.replies.map((reply) => (
-                        <div key={reply.id} className="flex items-start space-x-3">
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage src={reply.author.avatar || "/placeholder.svg"} />
-                            <AvatarFallback className="text-xs">
-                              {reply.author.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <div className="bg-gray-50 rounded-lg p-3">
-                              <div className="flex items-center space-x-2 mb-1">
-                                <span className="font-medium text-gray-800 text-sm">{reply.author.name}</span>
-                                <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-                                  {reply.author.role === "guru" ? "Guru" : "Relawan"}
-                                </Badge>
-                                <span className="text-xs text-gray-500">
-                                  {new Date(reply.createdAt).toLocaleDateString("id-ID")}
-                                </span>
-                              </div>
-                              <p className="text-gray-700 text-sm">{reply.content}</p>
-                            </div>
-                            <div className="flex items-center space-x-4 mt-2">
-                              <Button variant="ghost" size="sm" className="text-xs">
-                                <ChevronUp className="w-3 h-3 mr-1" />
-                                {reply.votes}
-                              </Button>
-                              <Button variant="ghost" size="sm" className="text-xs">
-                                <ChevronDown className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+            {/* Content */}
+            <div className="flex flex-col gap-4 my-10">
+              <h3 className="text-3xl font-bold font-jakarta">Cara menang hackathon</h3>
+              <p className="font-geist text-base font-medium">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed quis mi  tristique, molestie lacus ut, mattis sapien. Phasellus porttitor purus  est. Sed pellentesque mattis libero, in cursus justo gravida tincidunt.  Vivamus rutrum, velit nec vulputate tempor, lectus justo consectetur  libero, a porttitor massa urna facilisis lacus.A Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed quis mi  tristique, molestie lacus ut, mattis sapien. Phasellus porttitor purus  est. Sed pellentesque mattis libero, in cursus justo gravida tincidunt.  Vivamus rutrum, velit nec vulputate tempor, lectus justo consectetur  libero, a porttitor massa urna facilisis lacus.A</p>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Action */}
+            <div className="flex items-center justify-between font-jakarta">
+
+              {/* Vote */}
+              <div className="flex items-center gap-4">
+                <button className="flex items-center font-semibold gap-4">
+                  <ArrowBigUpDash color="#4755F1" />
+                  Upvote
+                </button>
+                <button className="flex items-center font-semibold gap-4">
+                  <ArrowBigDownDash color="#FF0000" />
+                  Downvote
+                </button>
+              </div>
+
+              {/* Reply */}
+              <button className="flex items-center font-semibold gap-2">
+                <MessageSquareText size={20} />
+                  Balas
+              </button>
+             
+            </div>
+          </div>
+
+        </div>
       </div>
-    </AuthenticatedLayout>
-  )
+    </UserLayout>
+  );
 }

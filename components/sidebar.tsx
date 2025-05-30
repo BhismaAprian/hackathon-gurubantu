@@ -1,90 +1,57 @@
-"use client"
+import { ArchiveRestore, LayoutDashboard, Library, MessageSquareText, UserRoundPen } from "lucide-react";
+import Link from "next/link";
 
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { LayoutDashboard, MessageSquare, BookOpen, History, ChevronLeft, ChevronRight } from "lucide-react"
 
-const sidebarItems = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Forum",
-    href: "/forum",
-    icon: MessageSquare,
-  },
-  {
-    title: "Perpustakaan",
-    href: "/library",
-    icon: BookOpen,
-  },
-  {
-    title: "Riwayat Diskusi",
-    href: "/history",
-    icon: History,
-  },
-]
-
-export default function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const pathname = usePathname()
+export default function Sidebar() { 
 
   return (
-    <div
-      className={cn(
-        "bg-white border-r border-blue-100 transition-all duration-300 flex flex-col",
-        isCollapsed ? "w-16" : "w-64",
-      )}
-    >
-      {/* Sidebar Header */}
-      <div className="p-4 border-b border-blue-100">
-        <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">GB</span>
-              </div>
-              <span className="font-bold text-lg text-gray-800">GuruBantu</span>
-            </div>
-          )}
-          <Button variant="ghost" size="sm" onClick={() => setIsCollapsed(!isCollapsed)} className="ml-auto">
-            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </Button>
+    <aside className="w-full max-w-[22rem] bg-white h-screen sticky top-0 z-50 border-r border-gray-200 font-jakarta">
+      <div className="container px-4 py-10">
+        <div className="logo flex items-center justify-center">
+          <h1 className="text-heading font-extrabold text-[24px]">GuruBantu</h1>
+        </div>
+
+        {/* Main Menu */}
+        <div className="flex flex-col mt-10">
+
+          {/* Link */}
+        
+          <div className="flex flex-col gap-2">
+            <Link href="/" className="text-[#CEF17B] bg-[#084734] text-sm font-semibold flex items-center gap-4 px-4 py-4 rounded-md">
+               <LayoutDashboard size={20} />
+                Dashboard 
+            </Link>
+            <Link href="/" className="text-[#084734] text-sm font-semibold flex items-center gap-4 px-4 py-3 rounded-md">
+               <Library size={20}/>
+                Perpustakaan 
+            </Link>
+            <Link href="/" className="text-[#084734] text-sm font-semibold flex items-center gap-4 px-4 py-3 rounded-md">
+               <UserRoundPen size={20}/>
+                Profile
+            </Link>
+          </div>
+        </div>
+        
+        <hr className="my-6 border-gray-200" />
+
+        {/* Forum */}
+        <div className="flex flex-col">
+          <h2 className="text-sm font-semibold text-[#98A2B3] tracking-wide px-4">Forum</h2>
+          
+          {/* Link */}
+
+          <div className="mt-5 flex flex-col gap-2">
+            <Link href="/forum" className="text-[#084734] text-sm font-semibold flex items-center gap-4 px-4 py-3 rounded-md">
+               <MessageSquareText size={20}/>
+                Forum Diskusi
+            </Link>
+            <Link href="/" className="text-[#084734] text-sm font-semibold flex items-center gap-4 px-4 py-4 rounded-md">
+               <ArchiveRestore size={20}/>
+                Riwayat Diskusi
+            </Link>
+          </div>
         </div>
       </div>
-
-      {/* Navigation Items */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
-          {sidebarItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
-            return (
-              <li key={item.href}>
-                <Link href={item.href}>
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    className={cn(
-                      "w-full justify-start",
-                      isActive
-                        ? "bg-blue-500 text-white hover:bg-blue-600"
-                        : "text-gray-600 hover:text-blue-600 hover:bg-blue-50",
-                      isCollapsed && "px-2",
-                    )}
-                  >
-                    <item.icon className={cn("w-5 h-5", !isCollapsed && "mr-3")} />
-                    {!isCollapsed && <span>{item.title}</span>}
-                  </Button>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </nav>
-    </div>
+    </aside>
   )
 }
