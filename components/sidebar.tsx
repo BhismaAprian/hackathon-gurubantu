@@ -49,11 +49,6 @@ export default function Sidebar() {
               <Library size={20} />
               Perpustakaan
             </Link>
-<<<<<<< Updated upstream
-            <Link href="/profile" className="text-[#084734] text-sm font-semibold flex items-center gap-4 px-4 py-3 rounded-md">
-               <UserRoundPen size={20}/>
-                Profile
-=======
 
             <Link
               href="/profile"
@@ -65,7 +60,6 @@ export default function Sidebar() {
             >
               <UserRoundPen size={20} />
               Profile
->>>>>>> Stashed changes
             </Link>
           </div>
         </div>
