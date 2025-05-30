@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,10 +23,13 @@ export default function ForumPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [showTagFilter, setShowTagFilter] = useState(false)
 
-  // Build filters for the hook
-  const filters: PostFilters = {
-    search: searchQuery || undefined,
-  }
+ const filters: PostFilters = useMemo(() => ({
+  search: searchQuery || undefined,
+  subject: selectedSubject !== "all" ? selectedSubject : undefined,
+  level: selectedLevel !== "all" ? selectedLevel : undefined,
+  tags: selectedTags.length > 0 ? selectedTags : undefined,
+}), [searchQuery, selectedSubject, selectedLevel, selectedTags])
+
 
   const { posts, loading, error, fetchPosts } = usePosts(filters)
 
