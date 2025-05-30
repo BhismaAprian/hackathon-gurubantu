@@ -41,22 +41,7 @@ export default function Sidebar() {
         isCollapsed ? "w-16" : "w-64",
       )}
     >
-      {/* Sidebar Header */}
-      <div className="p-4 border-b border-blue-100">
-        <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">GB</span>
-              </div>
-              <span className="font-bold text-lg text-gray-800">GuruBantu</span>
-            </div>
-          )}
-          <Button variant="ghost" size="sm" onClick={() => setIsCollapsed(!isCollapsed)} className="ml-auto">
-            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </Button>
-        </div>
-      </div>
+     
 
       {/* Navigation Items */}
       <nav className="flex-1 p-4">
