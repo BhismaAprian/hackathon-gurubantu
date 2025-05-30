@@ -16,6 +16,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { redirect } from "next/navigation";
 
 
 export default function CreateThreadPage() {
@@ -65,6 +66,8 @@ export default function CreateThreadPage() {
 
     v.slug = slug;
     v.author_id = session.user.id
+    
+
     const {data: thread_data, error} = await supabase.from("threads").insert({
       title: v.title,
       content: v.content,
@@ -80,14 +83,15 @@ export default function CreateThreadPage() {
       return;
     }
 
-    await supabase.from("thread_tags").insert({
-      thread_id: thread_data.id,
-      tags: v.tags.join(",") // Assuming tags is an array of strings
-    })
+    v.tags.map(async(tag) => {
+      await supabase.from("thread_tags").upsert({
+        thread_id: thread_data.id,
+        tag_id: tag // Assuming tag is a string
+      })
+    });
 
-
+    redirect("/forum")
     toast.success("Thread created successfully!");
-    console.log("Thread created:", thread_data);
   }
 
   return (
@@ -170,12 +174,12 @@ export default function CreateThreadPage() {
                   return (
                     <MultiSelect 
                       options={[
-                        { value: "guru", label: "Guru" },
-                        { value: "uts", label: "UTS" },
-                        { value: "quiz", label: "Quiz" },
-                        { value: "tugas", label: "Tugas" },
-                        { value: "ujian", label: "Ujian" },
-                        { value: "diskusi", label: "Diskusi" }
+                        { value: "1", label: "tips-mengajar" },
+                        { value: "2", label: "kurikulum-merdeka" },
+                        { value: "3", label: "pembelajaran-online" },
+                        { value: "4", label: "evaluasi" },
+                        { value: "5", label: "kreatif" },
+                        { value: "6", label: "teknologi" }
                       ]}
                       onValueChange={(value) => field.onChange([...value])}
                       value={field.value}

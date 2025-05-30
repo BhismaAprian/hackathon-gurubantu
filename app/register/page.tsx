@@ -16,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 
 import { useState } from "react"
 import { createClient } from "@/utils/supabase/client"
+import { redirect } from "next/navigation"
 
 export default function RegisterPage() {
   const supabase = createClient()
@@ -38,7 +39,7 @@ export default function RegisterPage() {
   })
 
   async function onSubmit(v: RegisterForm) {
-    const { error: signUpError, } = await supabase.auth.signUp({
+    const { error: signUpError, data} = await supabase.auth.signUp({
       email: v.email,
       password: v.password,
       options: {
@@ -56,7 +57,16 @@ export default function RegisterPage() {
       return;
     }
 
+    await supabase.from("profiles").insert({
+      id: data.user?.id,
+      full_name: v.full_name,
+      email: v.email,
+      role: v.role,
+      teaching_experience: v.teaching_experience,
+    });
+
     toast.success("Akun Anda telah berhasil dibuat.")
+    redirect("/login")
   }
 
   return (
