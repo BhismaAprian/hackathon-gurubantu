@@ -6,18 +6,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 
-export default async function UserLayout({
+export default function UserLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-   const supabase = await createClient();
-    const { data, error } = await supabase.auth.getUser()  
-    console.log(error)
-    if(error || !data?.user) {   
-       redirect('/login')  
-    }
-  
+
   return (
       <div className="min-h-screen flex bg-[#F0F0F0]">
         <div className="flex flex-1">
@@ -41,8 +35,8 @@ export default async function UserLayout({
                                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                               </Avatar>
                               <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-medium">{data.user.user_metadata.full_name}</span>
-                                <span className="truncate text-xs">{data.user.user_metadata.email}</span>
+                                {/* <span className="truncate font-medium">{data.user.user_metadata.full_name}</span>
+                                <span className="truncate text-xs">{data.user.user_metadata.email}</span> */}
                               </div>
                             </div>
                           </DropdownMenuLabel>

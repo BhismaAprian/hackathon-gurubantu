@@ -3,7 +3,7 @@ import Together from 'together-ai';
 
 export async function GET() {
   const together = new Together({
-    apiKey: "afbdab26abf0f0e4fd71b1f0813e4f7277d3ecc171e82590ddafcff81453e0b5"
+    apiKey: "2c7315b858eef48bf960adc241681c6e2bacbadf10ea29bd0a4c5fb788ae158e"
   });
 
   const chat = await together.chat.completions.create({
