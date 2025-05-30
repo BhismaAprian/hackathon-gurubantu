@@ -154,6 +154,12 @@ export default function LibraryClient({ initialMaterials }: LibraryClientProps) 
     <div className="bg-white rounded-lg p-8 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
+          <Button asChild className="bg-gray-900 text-white font-semibold font-jakarta">
+              <Link href="/library/upload">
+                <Plus className="mr-2" size={20} />
+                Upload Materi
+              </Link>
+            </Button>
         <h1 className="text-4xl font-bold font-jakarta text-gray-900">📚 Library</h1>
         <div className="text-sm font-geist text-gray-500">{filteredMaterials.length} materials found</div>
       </div>
@@ -286,10 +292,6 @@ export default function LibraryClient({ initialMaterials }: LibraryClientProps) 
                     <div className="flex items-center gap-1">
                       <Eye className="w-4 h-4" />
                       <span>{material.view_count.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Download className="w-4 h-4" />
-                      <span>{material.download_count.toLocaleString()}</span>
                     </div>
                   </div>
                   <Badge className={`text-xs ${getFileTypeColor(material.file_type)}`}>

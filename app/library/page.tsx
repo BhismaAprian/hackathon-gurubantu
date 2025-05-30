@@ -1,75 +1,175 @@
-import UserLayout from "@/components/layout/UserLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
-import Link from "next/link";
+import { createClient } from "@/utils/supabase/server"
+import { redirect } from "next/navigation"
+import LibraryClient from "./library-client"
 
-export default function LibraryPage() {
-  return (
-    <UserLayout>
-      <div className="container p-8 bg-white rounded-lg h-screen overflow-y-auto">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold font-jakarta">📚 Perpustakaan Materi</h1>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 text-gray-500" size={20} />
-              <Input
-                placeholder="Cari materi..."
-                className="pl-10 pr-4 py-2 rounded-lg border border-gray-300 w-64"
-              />
-            </div>
-            <Button asChild className="bg-gray-900 text-white font-semibold font-jakarta">
-              <Link href="/library/upload">
-                <Plus className="mr-2" size={20} />
-                Upload Materi
-              </Link>
-            </Button>
-          </div>
-        </div>
+// Type definition for library material
+interface LibraryMaterial {
+  id: string
+  user_id: string
+  title: string
+  description: string
+  file_url: string
+  file_name: string
+  file_size: number
+  file_type: string
+  subject: string
+  education_level: string
+  curriculum: string
+  tags: string[]
+  learning_objectives: string
+  download_count: number
+  view_count: number
+  created_at: string
+}
 
-        {/* List Materi */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Card Materi - statis */}
-          <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
-            <h3 className="text-xl font-semibold mb-2 font-jakarta">RPP Matematika Kelas 7</h3>
-            <p className="text-sm text-gray-600 mb-2 font-geist">PDF · 2.3 MB</p>
-            <p className="text-sm text-gray-500 font-geist mb-4">
-              Materi bilangan bulat untuk jenjang SMP, lengkap dengan latihan soal.
-            </p>
-            <div className="flex justify-between items-center text-sm text-gray-500 font-geist">
-              <span>📘 Matematika</span>
-              <span>👤 Terrano</span>
-            </div>
-          </div>
+// Server function to fetch library materials
+async function getLibraryMaterials(): Promise<LibraryMaterial[]> {
+  const supabase = await createClient()
 
-          <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
-            <h3 className="text-xl font-semibold mb-2 font-jakarta">Presentasi IPA Kelas 8</h3>
-            <p className="text-sm text-gray-600 mb-2 font-geist">PPTX · 4.8 MB</p>
-            <p className="text-sm text-gray-500 font-geist mb-4">
-              Penjelasan sistem pernapasan manusia dengan ilustrasi menarik.
-            </p>
-            <div className="flex justify-between items-center text-sm text-gray-500 font-geist">
-              <span>🧪 IPA</span>
-              <span>👤 Rahmawati</span>
-            </div>
-          </div>
+  // For now, return mock data. Replace this with actual Supabase query:
+  const { data, error } = await supabase
+    .from('library_materials')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-          <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
-            <h3 className="text-xl font-semibold mb-2 font-jakarta">Video Sejarah Indonesia</h3>
-            <p className="text-sm text-gray-600 mb-2 font-geist">MP4 · 45 MB</p>
-            <p className="text-sm text-gray-500 font-geist mb-4">
-              Penjelasan interaktif tentang peristiwa Proklamasi Kemerdekaan.
-            </p>
-            <div className="flex justify-between items-center text-sm text-gray-500 font-geist">
-              <span>🏛️ Sejarah</span>
-              <span>👤 Andi</span>
-            </div>
-          </div>
-        </div>
-        
-      </div>
-    </UserLayout>
-  );
+  if (error) {
+    console.error('Error fetching library materials:', error)
+    return []
+  }
+
+  return data || []
+
+  // Mock data for now
+  // return [
+  //   {
+  //     id: "1",
+  //     user_id: "user1",
+  //     title: "Advanced Calculus Notes",
+  //     description:
+  //       "Comprehensive notes covering differential and integral calculus with practical examples and problem-solving techniques.",
+  //     file_url: "/files/calculus-notes.pdf",
+  //     file_name: "calculus-notes.pdf",
+  //     file_size: 2048576,
+  //     file_type: "pdf",
+  //     subject: "Mathematics",
+  //     education_level: "University",
+  //     curriculum: "Engineering",
+  //     tags: ["calculus", "mathematics", "derivatives", "integrals"],
+  //     learning_objectives: "Master advanced calculus concepts",
+  //     download_count: 245,
+  //     view_count: 1203,
+  //     created_at: "2024-01-15T10:30:00Z",
+  //   },
+  //   {
+  //     id: "2",
+  //     user_id: "user2",
+  //     title: "Physics Lab Manual",
+  //     description:
+  //       "Complete laboratory manual for introductory physics experiments including mechanics, thermodynamics, and electromagnetism.",
+  //     file_url: "/files/physics-lab.pdf",
+  //     file_name: "physics-lab-manual.pdf",
+  //     file_size: 5242880,
+  //     file_type: "pdf",
+  //     subject: "Physics",
+  //     education_level: "High School",
+  //     curriculum: "Science",
+  //     tags: ["physics", "laboratory", "experiments", "mechanics"],
+  //     learning_objectives: "Understand fundamental physics principles through hands-on experiments",
+  //     download_count: 189,
+  //     view_count: 892,
+  //     created_at: "2024-01-10T14:20:00Z",
+  //   },
+  //   {
+  //     id: "3",
+  //     user_id: "user3",
+  //     title: "Chemistry Reaction Mechanisms",
+  //     description:
+  //       "Visual guide to organic chemistry reaction mechanisms with step-by-step explanations and molecular diagrams.",
+  //     file_url: "/files/chemistry-mechanisms.pptx",
+  //     file_name: "reaction-mechanisms.pptx",
+  //     file_size: 15728640,
+  //     file_type: "pptx",
+  //     subject: "Chemistry",
+  //     education_level: "University",
+  //     curriculum: "Science",
+  //     tags: ["chemistry", "organic", "reactions", "mechanisms"],
+  //     learning_objectives: "Master organic reaction mechanisms",
+  //     download_count: 156,
+  //     view_count: 734,
+  //     created_at: "2024-01-08T09:15:00Z",
+  //   },
+  //   {
+  //     id: "4",
+  //     user_id: "user4",
+  //     title: "Programming Fundamentals",
+  //     description:
+  //       "Introduction to programming concepts using Python. Covers variables, loops, functions, and basic data structures.",
+  //     file_url: "/files/programming-basics.pdf",
+  //     file_name: "programming-fundamentals.pdf",
+  //     file_size: 3145728,
+  //     file_type: "pdf",
+  //     subject: "Computer Science",
+  //     education_level: "High School",
+  //     curriculum: "Technology",
+  //     tags: ["programming", "python", "basics", "coding"],
+  //     learning_objectives: "Learn fundamental programming concepts",
+  //     download_count: 312,
+  //     view_count: 1456,
+  //     created_at: "2024-01-12T16:45:00Z",
+  //   },
+  //   {
+  //     id: "5",
+  //     user_id: "user5",
+  //     title: "World History Timeline",
+  //     description:
+  //       "Interactive timeline covering major world events from ancient civilizations to modern times with detailed explanations.",
+  //     file_url: "/files/history-timeline.pdf",
+  //     file_name: "world-history-timeline.pdf",
+  //     file_size: 8388608,
+  //     file_type: "pdf",
+  //     subject: "History",
+  //     education_level: "High School",
+  //     curriculum: "Social Studies",
+  //     tags: ["history", "timeline", "world events", "civilizations"],
+  //     learning_objectives: "Understand chronological development of world history",
+  //     download_count: 98,
+  //     view_count: 567,
+  //     created_at: "2024-01-05T11:30:00Z",
+  //   },
+  //   {
+  //     id: "6",
+  //     user_id: "user6",
+  //     title: "Biology Cell Structure",
+  //     description:
+  //       "Detailed study of cell structure and function with high-resolution diagrams and comparative analysis.",
+  //     file_url: "/files/cell-structure.pdf",
+  //     file_name: "biology-cell-structure.pdf",
+  //     file_size: 4194304,
+  //     file_type: "pdf",
+  //     subject: "Biology",
+  //     education_level: "University",
+  //     curriculum: "Science",
+  //     tags: ["biology", "cells", "structure", "function"],
+  //     learning_objectives: "Understand cellular biology fundamentals",
+  //     download_count: 203,
+  //     view_count: 945,
+  //     created_at: "2024-01-18T13:20:00Z",
+  //   },
+  // ]
+}
+
+// Server Component - handles authentication and data fetching
+export default async function LibraryPage() {
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.getUser()
+
+  if (error || !data?.user) {
+    redirect("/login")
+  }
+
+  // Fetch library materials on the server
+  const materials = await getLibraryMaterials()
+
+  // Pass serializable data to client component
+  return <LibraryClient initialMaterials={materials} />
 }
