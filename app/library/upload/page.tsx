@@ -52,7 +52,6 @@ export default function UploadPageWrapper() {
   };
 
   return (
-    <UserLayout>
       <div className="container max-w-3xl mx-auto py-10 space-y-8">
         <Link href="/library">
           <Button variant="outline">← Kembali ke Library</Button>
@@ -155,6 +154,5 @@ export default function UploadPageWrapper() {
           </div>
         </form>
       </div>
-    </UserLayout>
   );
 }
