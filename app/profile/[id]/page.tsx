@@ -1,40 +1,83 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Edit, Calendar, BookOpen, MessageSquare, Download, Heart, Loader2, User } from "lucide-react"
+import { Calendar, BookOpen, MessageSquare, Download, Heart, Loader2, User, ArrowLeft, Mail } from "lucide-react"
 import Link from "next/link"
 import AuthenticatedLayout from "@/components/authenticated-layout"
 import { useAuth } from "@/hooks/use-auth"
 import { usePosts } from "@/hooks/use-posts"
 import { useLibraryMaterials } from "@/hooks/use-library-materials"
+import { supabase } from "@/lib/supabase"
 
-export default function ProfilePage() {
-  const { user, loading: authLoading } = useAuth()
-  const { posts, loading: postsLoading } = usePosts()
-  const { materials, loading: materialsLoading } = useLibraryMaterials()
+interface UserProfilePageProps {
+  params: Promise<{ id: string }>
+}
 
+export default function UserProfilePage({ params }: UserProfilePageProps) {
+  const { id } = use(params)
+  const { user: currentUser } = useAuth()
+  const { posts } = usePosts()
+  const { materials } = useLibraryMaterials()
+
+  const [profileUser, setProfileUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [userStats, setUserStats] = useState({
     threadsCount: 0,
     resourcesCount: 0,
     totalDownloads: 0,
     totalLikes: 0,
   })
-
   const [userThreads, setUserThreads] = useState<any[]>([])
   const [userResources, setUserResources] = useState<any[]>([])
 
   useEffect(() => {
-    if (user && posts && materials) {
+    const fetchUserProfile = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        console.log("Fetching user profile for ID:", id)
+
+        const { data: userData, error: userError } = await supabase.from("users").select("*").eq("id", id).single()
+
+        if (userError) {
+          console.error("Error fetching user:", userError)
+          if (userError.code === "PGRST116") {
+            setError("User tidak ditemukan")
+          } else {
+            setError("Gagal memuat profil user")
+          }
+          return
+        }
+
+        console.log("User data:", userData)
+        setProfileUser(userData)
+      } catch (err: any) {
+        console.error("Error:", err)
+        setError("Terjadi kesalahan saat memuat profil")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (id) {
+      fetchUserProfile()
+    }
+  }, [id])
+
+  useEffect(() => {
+    if (profileUser && posts && materials) {
       // Filter user's posts
-      const userPosts = posts.filter((post) => post.author_id === user.id)
+      const userPosts = posts.filter((post) => post.author_id === profileUser.id)
       setUserThreads(userPosts)
 
       // Filter user's materials
-      const userMaterials = materials.filter((material) => material.user_id === user.id)
+      const userMaterials = materials.filter((material) => material.user_id === profileUser.id)
       setUserResources(userMaterials)
 
       // Calculate stats
@@ -48,7 +91,7 @@ export default function ProfilePage() {
         totalLikes,
       })
     }
-  }, [user, posts, materials])
+  }, [profileUser, posts, materials])
 
   const stats = [
     { label: "Thread Dibuat", value: userStats.threadsCount, icon: MessageSquare },
@@ -57,7 +100,9 @@ export default function ProfilePage() {
     { label: "Total Likes", value: userStats.totalLikes, icon: Heart },
   ]
 
-  if (authLoading) {
+  const isOwnProfile = currentUser?.id === profileUser?.id
+
+  if (loading) {
     return (
       <AuthenticatedLayout>
         <div className="p-8 max-w-4xl mx-auto">
@@ -70,17 +115,22 @@ export default function ProfilePage() {
     )
   }
 
-  if (!user) {
+  if (error || !profileUser) {
     return (
       <AuthenticatedLayout>
         <div className="p-8 max-w-4xl mx-auto">
+          <Link href="/forum" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Kembali
+          </Link>
+
           <Card className="border-0 shadow-lg bg-white">
             <CardContent className="p-8 text-center">
               <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Profile Tidak Ditemukan</h3>
-              <p className="text-gray-600 mb-6">Silakan login untuk melihat profil Anda</p>
-              <Link href="/login">
-                <Button>Login Sekarang</Button>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Profil Tidak Ditemukan</h3>
+              <p className="text-gray-600 mb-6">{error || "User yang Anda cari tidak ditemukan"}</p>
+              <Link href="/forum">
+                <Button>Kembali ke Forum</Button>
               </Link>
             </CardContent>
           </Card>
@@ -92,53 +142,65 @@ export default function ProfilePage() {
   return (
     <AuthenticatedLayout>
       <div className="p-8 max-w-4xl mx-auto">
+        {/* Back Button */}
+        <Link href="/forum" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Kembali
+        </Link>
+
         {/* Profile Header */}
         <Card className="border-0 shadow-lg bg-white mb-6">
           <CardContent className="p-8">
             <div className="flex items-start space-x-6">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={user.avatar_url || "/placeholder.svg"} />
+                <AvatarImage src={profileUser.avatar_url || "/placeholder.svg"} />
                 <AvatarFallback className="text-2xl">
-                  {user.full_name
+                  {profileUser.full_name
                     ?.split(" ")
-                    .map((n) => n[0])
+                    .map((n: string) => n[0])
                     .join("") || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-800 mb-2">{user.full_name || "User"}</h1>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">{profileUser.full_name || "User"}</h1>
                     <div className="flex items-center space-x-4 text-gray-600">
                       <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                        {user.role === "guru" ? "Guru" : "Relawan"}
+                        {profileUser.role === "guru" ? "Guru" : "Relawan"}
                       </Badge>
-                      {user.subject && (
+                      {profileUser.subject && (
                         <span className="flex items-center space-x-1">
                           <BookOpen className="w-4 h-4" />
-                          <span>{user.subject}</span>
+                          <span>{profileUser.subject}</span>
                         </span>
                       )}
-                      {user.education_level && <span>{user.education_level}</span>}
+                      {profileUser.education_level && <span>{profileUser.education_level}</span>}
                     </div>
                   </div>
-                  <Link href="/profile/edit">
-                    <Button variant="outline" className="flex items-center space-x-2">
-                      <Edit className="w-4 h-4" />
-                      <span>Edit Profile</span>
-                    </Button>
-                  </Link>
+                  <div className="flex space-x-2">
+                    {isOwnProfile ? (
+                      <Link href="/profile/edit">
+                        <Button variant="outline">Edit Profile</Button>
+                      </Link>
+                    ) : (
+                      <Button variant="outline">
+                        <Mail className="w-4 h-4 mr-2" />
+                        Kontak
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center space-x-6 text-sm text-gray-500 mb-4">
                   <span className="flex items-center space-x-1">
                     <Calendar className="w-4 h-4" />
-                    <span>Bergabung {new Date(user.created_at).toLocaleDateString("id-ID")}</span>
+                    <span>Bergabung {new Date(profileUser.created_at).toLocaleDateString("id-ID")}</span>
                   </span>
-                  {user.teaching_experience && <span>Pengalaman: {user.teaching_experience}</span>}
+                  {profileUser.teaching_experience && <span>Pengalaman: {profileUser.teaching_experience}</span>}
                 </div>
                 <p className="text-gray-600">
-                  {user.bio ||
-                    `Seorang ${user.role === "guru" ? "guru" : "relawan"} ${user.subject || ""} yang aktif berbagi pengalaman dan sumber daya pembelajaran dengan komunitas GuruBantu.`}
+                  {profileUser.bio ||
+                    `Seorang ${profileUser.role === "guru" ? "guru" : "relawan"} ${profileUser.subject || ""} yang aktif berbagi pengalaman dan sumber daya pembelajaran dengan komunitas GuruBantu.`}
                 </p>
               </div>
             </div>
@@ -165,14 +227,10 @@ export default function ProfilePage() {
           <Card className="border-0 shadow-lg bg-white">
             <CardHeader>
               <CardTitle className="text-lg text-gray-800">Thread Terbaru</CardTitle>
-              <CardDescription>Thread yang telah Anda buat</CardDescription>
+              <CardDescription>Thread yang dibuat oleh {profileUser.full_name}</CardDescription>
             </CardHeader>
             <CardContent>
-              {postsLoading ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                </div>
-              ) : userThreads.length > 0 ? (
+              {userThreads.length > 0 ? (
                 <div className="space-y-4">
                   {userThreads.slice(0, 3).map((thread) => (
                     <div
@@ -194,23 +252,11 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   ))}
-                  {userThreads.length > 3 && (
-                    <Link href="/forum">
-                      <Button variant="ghost" size="sm" className="w-full">
-                        Lihat Semua Thread
-                      </Button>
-                    </Link>
-                  )}
                 </div>
               ) : (
                 <div className="text-center py-8">
                   <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500">Belum ada thread yang dibuat</p>
-                  <Link href="/forum/create">
-                    <Button variant="outline" size="sm" className="mt-2">
-                      Buat Thread Pertama
-                    </Button>
-                  </Link>
                 </div>
               )}
             </CardContent>
@@ -220,14 +266,10 @@ export default function ProfilePage() {
           <Card className="border-0 shadow-lg bg-white">
             <CardHeader>
               <CardTitle className="text-lg text-gray-800">Resource Terbaru</CardTitle>
-              <CardDescription>Resource yang telah Anda bagikan</CardDescription>
+              <CardDescription>Resource yang dibagikan oleh {profileUser.full_name}</CardDescription>
             </CardHeader>
             <CardContent>
-              {materialsLoading ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                </div>
-              ) : userResources.length > 0 ? (
+              {userResources.length > 0 ? (
                 <div className="space-y-4">
                   {userResources.slice(0, 3).map((resource) => (
                     <div
@@ -253,23 +295,11 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   ))}
-                  {userResources.length > 3 && (
-                    <Link href="/library">
-                      <Button variant="ghost" size="sm" className="w-full">
-                        Lihat Semua Resource
-                      </Button>
-                    </Link>
-                  )}
                 </div>
               ) : (
                 <div className="text-center py-8">
                   <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500">Belum ada resource yang dibagikan</p>
-                  <Link href="/library/upload">
-                    <Button variant="outline" size="sm" className="mt-2">
-                      Upload Resource Pertama
-                    </Button>
-                  </Link>
                 </div>
               )}
             </CardContent>
