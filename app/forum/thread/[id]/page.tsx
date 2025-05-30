@@ -1,7 +1,8 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef } from "react"
+import { NextApiRequest, NextApiResponse } from "next"
+ import { useState, useRef } from "react"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -57,6 +58,7 @@ import { useVotes } from "@/hooks/use-votes"
 import { useAuth } from "@/hooks/use-auth"
 import { uploadFile, getPublicUrl, STORAGE_BUCKETS, supabase } from "@/lib/supabase"
 import { toast } from "@/hooks/use-toast"
+import { log } from "console"
 
 interface ThreadDetailPageProps {
   params: { id: string }
@@ -320,60 +322,64 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
     }
   }
 
+// kdsjfxkjvfskjbvfdjbxkv
   const handleAIAssist = async () => {
     setIsAIGenerating(true)
 
-    setTimeout(async () => {
-      try {
-        const aiResponse = `Berdasarkan pertanyaan "${post.title}", saya dapat membantu dengan beberapa poin:
+    try {
+      const res = await fetch("/api/ai-assist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postContent: 
+          // post.content 
+        "apaloh boitak"
+        
+        }),
+      })  
 
-1. Pastikan Anda memahami konsep dasar terlebih dahulu
-2. Coba latihan soal yang serupa untuk memperkuat pemahaman
-3. Jangan ragu untuk bertanya jika ada bagian yang masih belum jelas
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Gagal mendapatkan AI response")
 
-Apakah ada aspek spesifik yang ingin Anda dalami lebih lanjut?`
-
-        const aiCommentData = {
-          content: aiResponse,
-          post_id: id,
-          author_id: user?.id || "ai-assistant",
-          is_ai_generated: true,
-          is_solution: false,
-          like_count: 0,
-          attachment_url: null,
-          attachment_name: null,
-          parent_comment_id: null,
-        }
-
-        const { data, error } = await supabase
-          .from("comments")
-          .insert([aiCommentData])
-          .select(`
-            *,
-            author:users(*)
-          `)
-          .single()
-
-        if (error) throw error
-
-        await refetch()
-
-        toast({
-          title: "AI Assistant",
-          description: "AI telah memberikan respons untuk thread ini",
-        })
-      } catch (error) {
-        console.error("AI assist error:", error)
-        toast({
-          title: "Error",
-          description: "Gagal mendapatkan respons AI",
-          variant: "destructive",
-        })
-      } finally {
-        setIsAIGenerating(false)
+      console.log(data);
+      const aiCommentData = {
+        content: data.aiResponse,
+        post_id: id,
+        author_id: "3d1bc824-7a74-411b-80ca-a5071d8f54bc",
+        is_ai_generated: true,
+        is_solution: false,
+        like_count: 0,
+        attachment_url: null,
+        attachment_name: null,
+        parent_comment_id: null,
       }
-    }, 2000)
+
+      const { data: insertedComment, error } = await supabase
+        .from("comments")
+        .insert([aiCommentData])
+        .select(`*, author:users(*)`)
+        .single()
+
+      if (error) throw error 
+
+      await refetch()
+
+      toast({
+        title: "AI Assistant",
+        description: "AI telah memberikan respons untuk thread ini",
+      })
+    } catch (error) {
+    console.log("masuk fungsi WEEE");
+    console.error("AI assist error:", error)
+    toast({
+      title: "Error",
+      description: "Gagal mendapatkan respons AI",
+      variant: "destructive",
+    })
+    } finally {
+      setIsAIGenerating(false)
+    }
   }
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
