@@ -14,7 +14,14 @@ export default async function ForumPage() {
   .from("threads")
   .select(`
     *,
-
+    author:author_id (
+      full_name
+    ),
+    thread_tags (
+      tag:tag_id (
+        name
+      )
+    )
   `)
   .order("created_at", { ascending: false });
 

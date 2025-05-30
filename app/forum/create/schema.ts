@@ -25,12 +25,12 @@ export const threadSchema = z.object({
   attachment_name: z.string().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
-  author: {
-    full_name: z.string(),
-    avatar_url: z.string(),
-    role: z.enum(['relawan', 'guru']).default('relawan'),
-    teaching_experience: z.string().optional(),
-  }
+  // author: {
+  //   full_name: z.string(),
+  //   avatar_url: z.string(),
+  //   role: z.enum(['relawan', 'guru']).default('relawan'),
+  //   teaching_experience: z.string().optional(),
+  // }
 })
 
 export const threadFormSchema = threadSchema.pick({

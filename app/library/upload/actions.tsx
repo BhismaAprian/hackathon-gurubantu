@@ -6,7 +6,7 @@ import { createClient } from '@/utils/supabase/server'
 import { v4 as uuidv4 } from 'uuid'
 
 export async function upload(formData: FormData) {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   // 1. Verifikasi User
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -63,7 +63,7 @@ export async function upload(formData: FormData) {
   }
 
   // 6. Dapatkan URL File
-  const { data: urlData } = supabase.storage
+  const { data: urlData } = await supabase.storage
     .from('library-materials')
     .getPublicUrl(filePath)
 
