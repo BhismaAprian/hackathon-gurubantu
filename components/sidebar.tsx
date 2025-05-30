@@ -1,5 +1,4 @@
-"use client"  // wajib di baris paling atas file
-
+"use client"  
 
 import {
   ArchiveRestore,
@@ -10,9 +9,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth" // or wherever your auth hook is
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { user } = useAuth()
 
   return (
     <aside className="w-full max-w-[22rem] bg-white h-screen sticky top-0 z-50 border-r border-gray-200 font-jakarta">
