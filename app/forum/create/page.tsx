@@ -11,11 +11,18 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Upload, X, FileText, ImageIcon, File } from "lucide-react"
+import { Upload, X, FileText, ImageIcon, File, Loader2 } from "lucide-react"
 import AuthenticatedLayout from "@/components/authenticated-layout"
+import { usePosts } from "@/hooks/use-posts"
+import { useAuth } from "@/hooks/use-auth"
+import { uploadFile, getPublicUrl, STORAGE_BUCKETS } from "@/lib/supabase"
+import { toast } from "@/hooks/use-toast"
 
 export default function CreateThreadPage() {
   const router = useRouter()
+  const { user } = useAuth()
+  const { createPost } = usePosts()
+
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -28,17 +35,85 @@ export default function CreateThreadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Anda harus login untuk membuat thread",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!formData.title.trim() || !formData.content.trim()) {
+      toast({
+        title: "Error",
+        description: "Judul dan konten harus diisi",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
 
-    // Mock submission
-    setTimeout(() => {
-      router.push("/forum")
-    }, 1500)
+    try {
+      let attachmentUrl = ""
+      let attachmentName = ""
+
+      // Upload file if exists
+      if (formData.file) {
+        const filePath = `${user.id}/${Date.now()}-${formData.file.name}`
+        await uploadFile(STORAGE_BUCKETS.FORUM_ATTACHMENTS, filePath, formData.file)
+        attachmentUrl = getPublicUrl(STORAGE_BUCKETS.FORUM_ATTACHMENTS, filePath)
+        attachmentName = formData.file.name
+      }
+
+      // Create the post
+      const postData = {
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        author_id: user.id,
+        status: "published" as const,
+        attachment_url: attachmentUrl || undefined,
+        attachment_name: attachmentName || undefined,
+        slug: formData.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, ""),
+      }
+
+      const newPost = await createPost(postData)
+
+      toast({
+        title: "Berhasil!",
+        description: "Thread berhasil dibuat",
+      })
+
+      router.push(`/forum/thread/${newPost.id}`)
+    } catch (error) {
+      console.error("Error creating post:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Gagal membuat thread",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "Ukuran file maksimal 10MB",
+          variant: "destructive",
+        })
+        return
+      }
       setFormData({ ...formData, file })
     }
   }
@@ -80,6 +155,7 @@ export default function CreateThreadPage() {
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="border-gray-200 focus:border-blue-500"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -89,6 +165,7 @@ export default function CreateThreadPage() {
                 <Select
                   value={formData.subject}
                   onValueChange={(value) => setFormData({ ...formData, subject: value })}
+                  disabled={isLoading}
                 >
                   <SelectTrigger className="border-gray-200 focus:border-blue-500">
                     <SelectValue placeholder="Pilih mata pelajaran" />
@@ -116,6 +193,7 @@ export default function CreateThreadPage() {
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                   className="min-h-[200px] border-gray-200 focus:border-blue-500"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -129,8 +207,9 @@ export default function CreateThreadPage() {
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
                     className="border-gray-200 focus:border-blue-500"
+                    disabled={isLoading}
                   />
-                  <Button type="button" onClick={addTag} variant="outline">
+                  <Button type="button" onClick={addTag} variant="outline" disabled={isLoading}>
                     Tambah
                   </Button>
                 </div>
@@ -139,7 +218,7 @@ export default function CreateThreadPage() {
                     {formData.tags.map((tag) => (
                       <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
                         <span>{tag}</span>
-                        <button type="button" onClick={() => removeTag(tag)} className="ml-1">
+                        <button type="button" onClick={() => removeTag(tag)} className="ml-1" disabled={isLoading}>
                           <X className="w-3 h-3" />
                         </button>
                       </Badge>
@@ -169,6 +248,7 @@ export default function CreateThreadPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => setFormData({ ...formData, file: null })}
+                        disabled={isLoading}
                       >
                         <X className="w-4 h-4" />
                       </Button>
@@ -184,9 +264,10 @@ export default function CreateThreadPage() {
                         onChange={handleFileChange}
                         className="hidden"
                         id="file-upload"
+                        disabled={isLoading}
                       />
                       <Label htmlFor="file-upload">
-                        <Button type="button" variant="outline" asChild>
+                        <Button type="button" variant="outline" asChild disabled={isLoading}>
                           <span>Pilih File</span>
                         </Button>
                       </Label>
@@ -202,9 +283,16 @@ export default function CreateThreadPage() {
                   className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Memposting..." : "Posting Thread"}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Memposting...
+                    </>
+                  ) : (
+                    "Posting Thread"
+                  )}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => router.back()}>
+                <Button type="button" variant="outline" onClick={() => router.back()} disabled={isLoading}>
                   Batal
                 </Button>
               </div>

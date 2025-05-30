@@ -30,6 +30,9 @@ export interface Comment {
   createdAt: string
   replies?: Comment[]
   votes: number
+  isAI?: boolean
+  hasFile?: boolean
+  fileName?: string
 }
 
 export interface Resource {
@@ -119,15 +122,50 @@ const mockComments: Comment[] = [
   },
 ]
 
-// Mock Threads
+// Add more comprehensive tags and subjects
+export const availableSubjects = [
+  "Matematika",
+  "Bahasa Indonesia",
+  "IPA",
+  "IPS",
+  "Bahasa Inggris",
+  "Fisika",
+  "Kimia",
+  "Biologi",
+  "Sejarah",
+  "Geografi",
+  "Seni",
+  "Olahraga",
+  "Umum",
+]
+
+export const availableTags = [
+  "ujian-nasional",
+  "kurikulum-merdeka",
+  "lks",
+  "tips-mengajar",
+  "strategi",
+  "kreatif",
+  "eksperimen",
+  "pembelajaran-online",
+  "media-pembelajaran",
+  "evaluasi",
+  "remedial",
+  "pengayaan",
+  "karakter",
+  "literasi",
+  "numerasi",
+]
+
+// Enhanced mock threads with more variety
 export const mockThreads: Thread[] = [
   {
     id: "1",
     title: "Tips Mengajar Matematika untuk Siswa SD di Daerah Terpencil",
     content:
-      "Halo rekan-rekan guru! Saya ingin berbagi pengalaman mengajar matematika di daerah terpencil dengan keterbatasan fasilitas. Berikut beberapa tips yang bisa diterapkan...",
+      "Halo rekan-rekan guru! Saya ingin berbagi pengalaman mengajar matematika di daerah terpencil dengan keterbatasan fasilitas. Berikut beberapa tips yang bisa diterapkan: 1. Gunakan benda-benda di sekitar sebagai alat peraga, 2. Buat permainan sederhana untuk konsep matematika, 3. Libatkan orang tua dalam pembelajaran di rumah.",
     author: mockUsers[0],
-    tags: ["matematika", "SD", "tips-mengajar"],
+    tags: ["matematika", "tips-mengajar", "pembelajaran-online"],
     votes: 15,
     comments: mockComments,
     createdAt: "2024-03-15T09:00:00Z",
@@ -136,26 +174,51 @@ export const mockThreads: Thread[] = [
   },
   {
     id: "2",
-    title: "Strategi Pembelajaran Bahasa Indonesia yang Menyenangkan",
+    title: "Implementasi Kurikulum Merdeka di Sekolah Dasar",
     content:
-      "Bagaimana cara membuat pembelajaran bahasa Indonesia lebih menarik? Mari diskusikan strategi-strategi kreatif yang pernah kalian coba.",
+      "Bagaimana pengalaman teman-teman dalam mengimplementasikan Kurikulum Merdeka? Saya masih kesulitan dalam menyesuaikan metode penilaian dan perencanaan pembelajaran.",
     author: mockUsers[1],
-    tags: ["bahasa-indonesia", "strategi", "kreatif"],
-    votes: 8,
+    tags: ["kurikulum-merdeka", "evaluasi", "strategi"],
+    votes: 23,
     comments: [],
     createdAt: "2024-03-14T15:30:00Z",
   },
   {
     id: "3",
-    title: "Eksperimen Sains Sederhana dengan Bahan Seadanya",
-    content: "Berbagi ide eksperimen sains yang bisa dilakukan dengan bahan-bahan yang mudah ditemukan di desa.",
+    title: "Persiapan Ujian Nasional Fisika SMA - Strategi Efektif",
+    content:
+      "Berbagi strategi untuk mempersiapkan siswa menghadapi UN Fisika. Fokus pada konsep dasar dan latihan soal yang tepat sasaran.",
     author: mockUsers[2],
-    tags: ["IPA", "eksperimen", "kreatif"],
-    votes: 12,
+    tags: ["ujian-nasional", "fisika", "strategi"],
+    votes: 18,
     comments: [],
     createdAt: "2024-03-13T11:15:00Z",
     hasFile: true,
-    fileName: "eksperimen-sains.docx",
+    fileName: "strategi-un-fisika.docx",
+  },
+  {
+    id: "4",
+    title: "Media Pembelajaran Interaktif untuk Bahasa Indonesia",
+    content:
+      "Saya sedang mengembangkan media pembelajaran interaktif untuk mata pelajaran Bahasa Indonesia. Ada yang punya pengalaman atau saran?",
+    author: mockUsers[0],
+    tags: ["bahasa-indonesia", "media-pembelajaran", "kreatif"],
+    votes: 12,
+    comments: [],
+    createdAt: "2024-03-12T14:20:00Z",
+  },
+  {
+    id: "5",
+    title: "Lembar Kerja Siswa (LKS) Kreatif untuk IPA",
+    content:
+      "Berbagi ide dan template LKS yang menarik untuk pembelajaran IPA di tingkat SMP. Fokus pada eksperimen sederhana yang bisa dilakukan di rumah.",
+    author: mockUsers[1],
+    tags: ["lks", "ipa", "kreatif", "eksperimen"],
+    votes: 20,
+    comments: [],
+    createdAt: "2024-03-11T10:45:00Z",
+    hasFile: true,
+    fileName: "lks-ipa-kreatif.pdf",
   },
 ]
 
@@ -266,4 +329,43 @@ export const mockUserHistory = {
       createdAt: "2024-03-13T16:45:00Z",
     },
   ],
+}
+
+// Mock AI response generator
+export const generateAIResponse = (threadTitle: string, threadContent: string): Comment => {
+  const aiResponses = [
+    {
+      content: `Berdasarkan analisis konten thread ini, saya merekomendasikan beberapa pendekatan: 1) Gunakan metode pembelajaran berbasis masalah untuk meningkatkan engagement siswa, 2) Integrasikan teknologi sederhana yang tersedia, 3) Buat assessment formatif yang berkelanjutan. Semoga membantu!`,
+      context: "general",
+    },
+    {
+      content: `Untuk topik ini, saya sarankan menggunakan pendekatan scaffolding: mulai dari konsep dasar, berikan contoh konkret, lalu ajak siswa berlatih mandiri. Jangan lupa untuk memberikan feedback yang konstruktif di setiap tahap pembelajaran.`,
+      context: "teaching",
+    },
+    {
+      content: `Berdasarkan best practices dalam pendidikan, beberapa strategi yang bisa diterapkan: 1) Diferensiasi pembelajaran sesuai gaya belajar siswa, 2) Penggunaan multimedia untuk memperkaya pengalaman belajar, 3) Kolaborasi antar siswa untuk peer learning.`,
+      context: "strategy",
+    },
+  ]
+
+  const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)]
+
+  return {
+    id: `ai-${Date.now()}`,
+    content: randomResponse.content,
+    author: {
+      id: "ai-assistant",
+      name: "AI Assistant GuruBantu",
+      email: "ai@gurubantu.com",
+      role: "relawan",
+      avatar: "/placeholder.svg?height=40&width=40",
+      subject: "AI",
+      experience: "Unlimited",
+      level: "Semua",
+      joinedAt: "2024-01-01",
+    },
+    createdAt: new Date().toISOString(),
+    votes: 0,
+    isAI: true,
+  }
 }
