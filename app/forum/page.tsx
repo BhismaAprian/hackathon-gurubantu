@@ -56,7 +56,7 @@ export default async function ForumPage() {
                 <div key={thread.id} className="px-5 py-7 bg-white rounded-lg border border-gray-200">
 
                   {/* Header */}
-                  <Link href={`/forum/thread/slug=${thread.slug}&id=${thread.id}`} className="cursor-pointer">
+                  <Link href={`/forum/thread/${thread.id}`} className="cursor-pointer">
                     <div className="cursor-pointer header flex items-start justify-between mb-4">
                       {/* Profile */}
                       <div className="flex items-center gap-4">
