@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import {Plus_Jakarta_Sans, Geist} from 'next/font/google'
 import './globals.css'
+import { Toaster } from '@/components/ui/sonner'
 
 
 export const metadata: Metadata = {
@@ -28,7 +29,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <Toaster position='top-center'/>
+      </body>
     </html>
   )
 }
