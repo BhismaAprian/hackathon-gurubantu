@@ -1,4 +1,15 @@
 import { z } from 'zod';
+export const userSchema = z.object({
+  id: z.string(),
+  full_name: z.string().min(1, { message: 'Nama lengkap tidak boleh kosong' }),
+  email: z.string().email({ message: 'Email tidak valid' }),
+  role: z.enum(['relawan', 'admin']).default('relawan'),
+  avatar_url: z.string().optional(),
+  teachig_experience: z.string().optional(),
+});
+
+export type User = z.infer<typeof userSchema>;
+
 export const threadSchema = z.object({
   id: z.string(),
   title: z.string().min(1, { message: 'Judul tidak boleh kosong' }),
@@ -13,7 +24,13 @@ export const threadSchema = z.object({
   attechment_url: z.string().optional(),
   attachment_name: z.string().optional(),
   created_at: z.string().optional(),
-  updated_at: z.string().optional()
+  updated_at: z.string().optional(),
+  author: {
+    full_name: z.string(),
+    avatar_url: z.string(),
+    role: z.enum(['relawan', 'guru']).default('relawan'),
+    teaching_experience: z.string().optional(),
+  }
 })
 
 export const threadFormSchema = threadSchema.pick({
@@ -28,3 +45,4 @@ export const threadFormSchema = threadSchema.pick({
 
 export type ThreadForm = z.infer<typeof threadFormSchema>;
 export type Thread = z.infer<typeof threadSchema>;
+

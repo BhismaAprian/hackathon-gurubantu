@@ -1,8 +1,21 @@
+"use server";
 import UserLayout from "@/components/layout/UserLayout";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { createClient } from "@/utils/supabase/server";
 import { ArrowBigDownDash, ArrowBigUpDash, MessageSquareText } from "lucide-react";
-
-export default function DetailForumPage() {
+export default async function DetailForumPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("threads")
+    .select(`
+      *
+    `)
+    .eq("slug", slug) 
+    .single(); 
+    
+  console.log("data", data);
+  
   return (
     <UserLayout>
       <div className="container p-8 bg-white rounded-lg h-screen overflow-y-auto">
@@ -24,7 +37,7 @@ export default function DetailForumPage() {
                   <AvatarImage src="./image.png"/>
                 </Avatar>
                 <div className="flex flex-col font-jakarta -pace-y-1">
-                  <h2 className="text-lg font-semibold text-gray-800">Terrano</h2>
+                  {/* <h2 className="text-lg font-semibold text-gray-800">{data.}</h2> */}
                   <p className="text-sm font-semibold text-gray-500">Institut Teknologi Kalimantan</p>
                 </div>
               </div>
