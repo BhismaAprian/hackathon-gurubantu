@@ -287,10 +287,6 @@ export default function LibraryClient({ initialMaterials }: LibraryClientProps) 
                       <Eye className="w-4 h-4" />
                       <span>{material.view_count.toLocaleString()}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Download className="w-4 h-4" />
-                      <span>{material.download_count.toLocaleString()}</span>
-                    </div>
                   </div>
                   <Badge className={`text-xs ${getFileTypeColor(material.file_type)}`}>
                     {material.file_type.toUpperCase()}
