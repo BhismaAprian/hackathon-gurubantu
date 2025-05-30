@@ -44,7 +44,7 @@ async function getLibraryMaterialById(id: string): Promise<LibraryMaterialWithUs
    .from('library_materials')
   .select(`
     *,
-    uploader:users!user_id (
+    uploader:profiles!user_id (
       id,
       full_name,
       email,

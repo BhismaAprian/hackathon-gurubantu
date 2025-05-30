@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
+import UserLayout from "@/components/layout/UserLayout"
 
 // Type definition for user
 interface User {
@@ -58,11 +59,12 @@ export default function ProfileDetail({ user }: ProfileDetailProps) {
 };
 
   // Format role name for display
-  const formatRoleName = (role: string) => {
-    return role.charAt(0).toUpperCase() + role.slice(1)
-  }
+//   const formatRoleName = (role: string) => {
+//     return role.charAt(0).toUpperCase() + role.slice(1)
+//   }
 
   return (
+    <UserLayout>
     <div className="bg-white rounded-lg p-8 min-h-full">
       {/* Back Button */}
       <div className="mb-6">
@@ -86,7 +88,7 @@ export default function ProfileDetail({ user }: ProfileDetailProps) {
               <CardTitle className="text-2xl font-bold font-jakarta">{user.name}</CardTitle>
               <CardDescription className="text-base font-geist">
                 <Badge className={`${getRoleBadgeColor(user.role)} font-medium mt-2`}>
-                  {formatRoleName(user.role)}
+                  {/* {formatRoleName(user.role)} */}
                 </Badge>
               </CardDescription>
             </CardHeader>
@@ -263,5 +265,6 @@ export default function ProfileDetail({ user }: ProfileDetailProps) {
         </div>
       </div>
     </div>
+    </UserLayout>
   )
 }
