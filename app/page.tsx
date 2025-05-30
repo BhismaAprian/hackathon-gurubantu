@@ -1,319 +1,122 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Users, BookOpen, MessageSquare, Heart, Download, ArrowRight, Lock } from "lucide-react"
-import Navbar from "@/components/navbar"
-import { mockThreads, mockResources } from "@/lib/mock-data"
+import Navbar from "@/components/navbar";
+import Image, {} from "next/image";
+
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      <Navbar />
+    <div className="min-h-dvh">
+      <Navbar/>
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto text-center">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">
-              Platform Kolaborasi untuk Guru Indonesia
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Bergabunglah dengan komunitas guru dan relawan pendidik untuk berbagi pengetahuan, sumber daya, dan
-              pengalaman mengajar di seluruh Indonesia.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/register">
-                <Button
-                  size="lg"
-                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-500 hover:to-blue-700 text-lg"
-                >
-                  Bergabung Sekarang
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="px-8 py-4 text-lg border-blue-300 text-blue-600 hover:bg-blue-50"
-                >
-                  Masuk ke Akun
-                </Button>
-              </Link>
+      <section className="pb-20 bg-gradient-to-b from-[#FFFFFF] via-[#CEF17B] to-[#FFFFFF] h-screen flex items-center ">
+        <div className="container flex flex-col items-center">
+          <div className="flex flex-col items-center space-y-8 max-w-5xl">
+            <div className="flex justify-center items-center w-md px-4 h-12 bg-[#084734] rounded-full text-[#CEF17B] text-base font-semibold">
+              <p className="font-jakarta">Bergabung dengan 10,000 Guru di Indonesia</p>
+            </div>
+            <h1 className="text-heading text-6xl text-center font-jakarta">Platform Kolaborasi untuk <br /> Guru Indonesia</h1>
+            <p className="text-paragraph text-center">GuruBantu adalah platform tempat para guru saling berbagi metode pengajaran, berdiskusi tentang tantangan di kelas, dan membangun komunitas pendidikan yang saling mendukung di seluruh Indonesia.</p>
+            <Image
+              src="/hero-image.png"
+              alt="Hero Image"
+              width={960}
+              height={460}
+              className="w-full max-w-4xl"
+            />
+          </div>
+        </div>
+      </section>
+      
+      {/* Why Section */}
+      <section className="py-24 h-screen flex bg-gradient-to-b from-[#FFFFFF] to-[#CEEDB2]">
+        <div className="container flex flex-col">
+          <div className="h-full flex flex-col space-y-20">
+            <h1 className="text-heading text-5xl font-jakarta">Kenapa Guru Bantu?</h1>
+
+            {/* Card Section */}
+            <div className="grid grid-cols-3 gap-4">
+
+              {/* Card Item */}
+              <div className="py-8 px-6 bg-[#084734] rounded-2xl shadow-md overflow-hidden">
+                <div className="flex flex-col space-y-4">
+                  <h2 className="text-heading text-3xl text-[#CEF17B] font-geist max-w-60">Forum Diskusi Interaktif</h2>
+                  <p className="text-paragraph text-base text-[#CEF17B]">Bergabunglah dalam diskusi aktif dengan guru dan relawan lainnya untuk berbagi pengalaman dan strategi mengajar.</p>
+                  <div className="relative h-96">
+                    <Image
+                      src="/benefit-forum.png"
+                      alt="Forum Diskusi Interaktif"
+                      width={600}
+                      height={500}
+                      className="max-w-4xl absolute top-14 left-20 shadow-lg"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Item */}
+              <div className="py-8 px-6 bg-[#084734] rounded-2xl shadow-md overflow-hidden">
+                <div className="flex flex-col-reverse space-y-4">
+                  <h2 className="text-heading text-3xl text-[#CEF17B] font-geist max-w-60">Perpustakaan</h2>
+                  <p className="text-paragraph text-base text-[#CEF17B]">Perpustakaan digital yang menyediakan berbagai sumber daya pendidikan, termasuk modul, video, dan template presentasi.</p>
+                  <div className="relative h-96">
+                    <Image
+                      src="/benefit-ai.png"
+                      alt="AI Assistensi Pembelajaran"
+                      width={600}
+                      height={500}
+                      className="max-w-4xl absolute top-14 left-20 shadow-lg"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Item */}
+              <div className="py-8 px-6 bg-[#084734] rounded-2xl shadow-md overflow-hidden">
+                <div className="flex flex-col space-y-4">
+                  <h2 className="text-heading text-3xl text-[#CEF17B] font-geist max-w-60">AI Assistensi Pembelajaran</h2>
+                  <p className="text-paragraph text-base text-[#CEF17B]">Dapatkan bantuan AI untuk membuat rencana pembelajaran, materi ajar, dan sumber daya pendidikan yang sesuai dengan kebutuhan siswa Anda.</p>
+                  <div className="relative h-96">
+                    <Image
+                      src="/benefit-ai.png"
+                      alt="AI Assistensi Pembelajaran"
+                      width={600}
+                      height={500}
+                      className="max-w-4xl absolute top-14 left-20 shadow-lg"
+                    />
+                  </div>
+                </div>
+              </div>
+
+
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-16 px-4">
-        <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 text-gray-800">Kenapa GuruBantu?</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Platform yang dirancang khusus untuk mendukung pendidik Indonesia dengan fitur-fitur yang mudah digunakan
-            </p>
+      {/* How it Works Section */}
+      <section className="py-24 h-screen flex bg-gradient-to-b from-[#CEEDB2] to-[#FFFFFF]">
+        <div className="container flex flex-col items-center">
+          <div className="max-w-3xl">
+            <h1 className="text-heading text-5xl text-center font-jakarta">Langkah Mudah untuk Mulai Bersama Guru Bantu</h1>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
-              <CardHeader className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-8 h-8 text-white" />
-                </div>
-                <CardTitle className="text-xl text-gray-800">Komunitas Supportif</CardTitle>
-                <CardDescription>
-                  Terhubung dengan sesama guru dan relawan dari seluruh Indonesia untuk saling mendukung dan berbagi
-                  pengalaman.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
-              <CardHeader className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare className="w-8 h-8 text-white" />
-                </div>
-                <CardTitle className="text-xl text-gray-800">Forum Diskusi Interaktif</CardTitle>
-                <CardDescription>
-                  Diskusikan strategi mengajar, berbagi tips, dan temukan solusi untuk tantangan pendidikan
-                  bersama-sama.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
-              <CardHeader className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-teal-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="w-8 h-8 text-white" />
-                </div>
-                <CardTitle className="text-xl text-gray-800">Perpustakaan Digital</CardTitle>
-                <CardDescription>
-                  Akses dan bagikan materi pembelajaran, modul, dan sumber daya pendidikan berkualitas tinggi.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Forum Preview */}
-      <section className="py-16 px-4 bg-white/50">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">Forum Diskusi Terbaru</h2>
-              <p className="text-gray-600">Lihat diskusi terbaru dari komunitas guru</p>
-            </div>
-            <Link href="/login">
-              <Button
-                variant="outline"
-                className="flex items-center space-x-2 border-blue-300 text-blue-600 hover:bg-blue-50"
-              >
-                <span>Bergabung untuk Akses Penuh</span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid gap-6">
-            {mockThreads.slice(0, 2).map((thread) => (
-              <Card key={thread.id} className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={thread.author.avatar || "/placeholder.svg"} />
-                      <AvatarFallback>
-                        {thread.author.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="font-semibold text-gray-800">{thread.title}</h3>
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                          {thread.author.role === "guru" ? "Guru" : "Relawan"}
-                        </Badge>
-                      </div>
-                      <p className="text-gray-600 mb-3 line-clamp-1">{thread.content.substring(0, 100)}...</p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span className="flex items-center space-x-1">
-                            <Heart className="w-4 h-4" />
-                            <span>{thread.votes}</span>
-                          </span>
-                          <span>{thread.comments.length} komentar</span>
-                        </div>
-                        <Link href="/login">
-                          <Button size="sm" variant="ghost" className="flex items-center space-x-1 text-blue-600">
-                            <Lock className="w-3 h-3" />
-                            <span>Login untuk Baca</span>
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Library Preview */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">Perpustakaan Digital</h2>
-              <p className="text-gray-600">Sumber daya pembelajaran terbaru</p>
-            </div>
-            <Link href="/login">
-              <Button variant="outline" className="flex items-center space-x-2">
-                <span>Jelajahi Library</span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {mockResources.slice(0, 3).map((resource) => (
-              <Card key={resource.id} className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-400 rounded-lg flex items-center justify-center">
-                      <BookOpen className="w-5 h-5 text-white" />
-                    </div>
-                    <Badge variant="outline">{resource.type.toUpperCase()}</Badge>
-                  </div>
-                  <h3 className="font-semibold text-gray-800 mb-2">{resource.title}</h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">{resource.description}</p>
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                    <span>
-                      {resource.subject} • {resource.level}
-                    </span>
-                    <span className="flex items-center space-x-1">
-                      <Download className="w-3 h-3" />
-                      <span>{resource.downloadCount}</span>
-                    </span>
-                  </div>
-                  <Link href="/login">
-                    <Button size="sm" variant="outline" className="w-full flex items-center space-x-1">
-                      <Lock className="w-3 h-3" />
-                      <span>Login untuk Download</span>
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <div></div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 bg-gradient-to-r from-blue-500 to-blue-700">
-        <div className="container mx-auto text-center">
-          <div className="max-w-2xl mx-auto text-white">
-            <h2 className="text-3xl font-bold mb-4">Siap Bergabung dengan Komunitas?</h2>
-            <p className="text-xl mb-8 opacity-90">
-              Mulai berbagi dan belajar bersama ribuan guru dan relawan pendidik di seluruh Indonesia.
-            </p>
-            <Link href="/register">
-              <Button
-                size="lg"
-                variant="secondary"
-                className="px-8 py-4 text-lg bg-white text-blue-600 hover:bg-gray-50"
-              >
-                Daftar Gratis Sekarang
-              </Button>
-            </Link>
+      <section className="py-24 h-screen flex">
+        <div className="container flex flex-col items-center justify-center">
+          <div className="bg-[#CEEDB2] rounded-2xl py-6 w-6xl flex items-center justify-center">
+            <div className="max-w-3xl py-8 flex flex-col items-center justify-center text-center space-y-8">
+              <h1 className="text-heading text-5xl font-jakarta">Bergabunglah dengan Komunitas Guru Bantu</h1>
+              <p className="text-paragraph text-lg">Daftar sekarang untuk mendapatkan akses ke forum diskusi, perpustakaan sumber daya, dan bantuan AI dalam mengajar.</p>
+              <button className="px-8 py-4 bg-[#084734] text-[#CEF17B] rounded-full text-lg font-semibold">
+                Daftar Sekarang
+              </button>
+            </div>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12 px-4">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">GB</span>
-                </div>
-                <span className="font-bold text-xl">GuruBantu</span>
-              </div>
-              <p className="text-gray-400">
-                Platform kolaborasi untuk mendukung pendidik Indonesia dalam menciptakan pembelajaran yang berkualitas.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4">Platform</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/forum" className="hover:text-white hover:text-blue-600">
-                    Forum
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/library" className="hover:text-white hover:text-blue-600">
-                    Library
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/about" className="hover:text-white hover:text-blue-600">
-                    Tentang Kami
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4">Dukungan</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/help" className="hover:text-white hover:text-blue-600">
-                    Bantuan
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-white hover:text-blue-600">
-                    Kontak
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/faq" className="hover:text-white hover:text-blue-600">
-                    FAQ
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/privacy" className="hover:text-white hover:text-blue-600">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-white hover:text-blue-600">
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; {new Date().getFullYear()} GuruBantu. Semua hak dilindungi.</p>
-          </div>
-        </div>
-      </footer>
     </div>
-  )
+  );
 }

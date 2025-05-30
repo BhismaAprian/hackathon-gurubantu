@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 body {
   font-family: Arial, Helvetica, sans-serif;
@@ -14,6 +12,8 @@ body {
 
 @layer base {
   :root {
+    --font-plus-jakarta-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-geist: 'Geist', sans-serif;
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -84,11 +84,31 @@ body {
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+
+
+@utility container {
+  @apply mx-auto px-4 sm:px-6 lg:px-8;
+  
 }
+
+
+@layer components {
+  .font-jakarta {
+    font-family: var(--font-plus-jakarta-sans);
+  }
+
+  .font-geist {
+    font-family: var(--font-geist);
+  }
+
+  .text-heading {
+    @apply font-bold -tracking-[4%] leading-[120%] text-[#084734]
+  }
+
+  .text-paragraph {
+    @apply text-base font-semibold text-[#084734] leading-[145%];
+    font-family: var(--font-plus-jakarta-sans);
+  }
+
+  
+} 

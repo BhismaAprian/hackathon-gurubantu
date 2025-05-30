@@ -1,3 +1,5 @@
+import { ImageProps } from "next/image"
+
 export interface User {
   id: string
   name: string
@@ -54,6 +56,44 @@ export interface Notification {
   createdAt: string
   actionUrl?: string
 }
+
+export interface Benefit {
+  id: string
+  title: string
+  description: string
+  image: ImageProps
+}
+
+export const mockBenefits: Benefit[] = [
+  {
+    id: "1",
+    title: "Forum Diskusi Interaktif",
+    description: "Bergabunglah dalam diskusi aktif dengan guru dan relawan lainnya untuk berbagi pengalaman dan strategi mengajar.",
+    image: {
+      src: "/benefit-forum.png",
+      alt: "Forum Diskusi Interaktif",
+    }
+  },
+  { 
+    id: "2",
+    title: "AI Assistensi Pembelajaran",
+    description: "Dapatkan bantuan AI untuk membuat rencana pembelajaran, materi ajar, dan sumber daya pendidikan yang sesuai dengan kebutuhan siswa Anda.",
+    image: {
+      src: "/benefit-ai.png",
+      alt: "AI Assistensi Pembelajaran",
+    }
+  },
+  {
+    id: "3",
+    title: "Perpustakaan ",
+    description: "Perpustakaan digital yang menyediakan berbagai sumber daya pendidikan, termasuk modul, video, dan template presentasi.",
+    image: {
+      src: "/benefit-training.png",
+      alt: "Perpustakaan",
+    }
+  },
+]
+
 
 // Mock Users
 export const mockUsers: User[] = [
