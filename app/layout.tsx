@@ -29,8 +29,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        {children}
+        <body>
+          {children}
         <Toaster position='top-center'/>
       </body>
     </html>

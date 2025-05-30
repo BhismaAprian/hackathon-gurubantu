@@ -1,16 +1,9 @@
-import { createClient } from "@/utils/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Inbox } from "lucide-react";
-import { redirect } from "next/navigation";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "./ui/dropdown-menu";
 import Link from "next/link";
 
 export default async function Navbar() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser()  
-  if(error || !data?.user) {   
-     redirect('/login')  
-  }
 
 
   return (
@@ -37,8 +30,8 @@ export default async function Navbar() {
                       <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-medium">{data.user.user_metadata.full_name}</span>
-                      <span className="truncate text-xs">{data.user.user_metadata.email}</span>
+                      {/* <span className="truncate font-medium">{data.user.user_metadata.full_name}</span>
+                      <span className="truncate text-xs">{data.user.user_metadata.email}</span> */}
                     </div>
                    </div>
                 </DropdownMenuLabel>
