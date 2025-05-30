@@ -1,36 +1,24 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 👩‍🏫 GuruBantu
 
-## Getting Started
+**GuruBantu** adalah aplikasi web kolaboratif yang dirancang untuk memudahkan **guru di daerah terpencil** terhubung dengan **pendidik relawan**, berbagi ilmu, dan saling membantu dalam pengajaran. Platform ini menyediakan forum tanya jawab, pustaka materi pembelajaran, serta profil pengguna yang dapat disesuaikan.
 
-First, run the development server:
+Dengan GuruBantu, guru dapat:
+- Mengajukan pertanyaan atau tantangan dalam pengajaran yang sedang dihadapi
+- Mendapat bantuan atau jawaban dari komunitas guru dan relawan
+- Berbagi dan mengunduh materi pembelajaran seperti PDF, gambar, PowerPoint, atau dokumen lainnya
+- Melihat profil guru lain dan membangun jejaring kolaboratif
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ⚙️ Tech Stack & Fungsinya
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Teknologi       | Fungsi                                                                 |
+|------------------|------------------------------------------------------------------------|
+| **Next.js**       | Framework React untuk membangun antarmuka web yang cepat dan responsif |
+| **Supabase**      | Backend-as-a-Service: menyediakan **auth**, **database PostgreSQL**, dan **file storage** |
+| **Tailwind CSS**  | Library CSS utility-first untuk desain antarmuka yang bersih dan modern |
+| **shadcn/ui**     | Komponen UI yang siap pakai dan dapat dikustomisasi menggunakan Tailwind |
+| **Framer Motion** | Menambahkan animasi interaktif seperti transisi halaman dan modal     |
+| **Lucide Icons**  | Ikon open-source yang digunakan untuk mempercantik antarmuka           |
+| **TanStack Query (opsional)** | Manajemen data async dan caching untuk interaksi dengan Supabase     |
+| **Vercel**         | Platform hosting untuk deployment cepat dan mudah dari Next.js        |
