@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useState } from "react";
+import { use } from 'react'
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -46,8 +47,8 @@ interface VoteState {
   }
 }
 
-export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
-  const { id } = params // Perbaikan 2: langsung ambil id dari params
+export default function ThreadDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params); // 👈 Wajib gunakan use()
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState("")
   const [commentFile, setCommentFile] = useState<File | null>(null)
