@@ -21,7 +21,7 @@ export default function Sidebar() {
                <LayoutDashboard size={20} />
                 Dashboard 
             </Link>
-            <Link href="/" className="text-[#084734] text-sm font-semibold flex items-center gap-4 px-4 py-3 rounded-md">
+            <Link href="/library" className="text-[#084734] text-sm font-semibold flex items-center gap-4 px-4 py-3 rounded-md">
                <Library size={20}/>
                 Perpustakaan 
             </Link>
