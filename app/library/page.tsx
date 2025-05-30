@@ -77,7 +77,7 @@ export default function LibraryPage() {
           : undefined,
       sortBy: sortBy as any,
       sortOrder: "desc",
-      is_approved: true, // Only show approved materials
+      is_approved: false, 
     }),
     [searchQuery, selectedSubject, selectedFormat, sortBy]
   );
