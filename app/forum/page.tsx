@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Plus, Heart, MessageSquare, Filter, FileText } from "lucide-react"
-import Navbar from "@/components/navbar"
+import AuthenticatedLayout from "@/components/authenticated-layout"
 import { mockThreads } from "@/lib/mock-data"
 
 export default function ForumPage() {
@@ -29,10 +29,8 @@ export default function ForumPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50">
-      <Navbar isAuthenticated />
-
-      <div className="container mx-auto px-4 py-8">
+    <AuthenticatedLayout>
+      <div className="p-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
@@ -40,7 +38,7 @@ export default function ForumPage() {
             <p className="text-gray-600">Berbagi pengalaman dan diskusi dengan sesama pendidik</p>
           </div>
           <Link href="/forum/create">
-            <Button className="bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 mt-4 md:mt-0">
+            <Button className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 mt-4 md:mt-0">
               <Plus className="w-4 h-4 mr-2" />
               Buat Thread Baru
             </Button>
@@ -48,7 +46,7 @@ export default function ForumPage() {
         </div>
 
         {/* Search and Filters */}
-        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm mb-6">
+        <Card className="border-0 shadow-lg bg-white mb-6">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
@@ -57,7 +55,7 @@ export default function ForumPage() {
                   placeholder="Cari thread, topik, atau kata kunci..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 border-gray-200 focus:border-orange-400"
+                  className="pl-10 border-gray-200 focus:border-blue-500"
                 />
               </div>
               <div className="flex gap-2">
@@ -96,10 +94,7 @@ export default function ForumPage() {
         {/* Thread List */}
         <div className="space-y-4">
           {filteredThreads.map((thread) => (
-            <Card
-              key={thread.id}
-              className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow"
-            >
+            <Card key={thread.id} className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4">
                   <Avatar className="w-12 h-12">
@@ -114,11 +109,11 @@ export default function ForumPage() {
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
                       <Link href={`/forum/thread/${thread.id}`}>
-                        <h3 className="font-semibold text-gray-800 hover:text-orange-600 transition-colors cursor-pointer">
+                        <h3 className="font-semibold text-gray-800 hover:text-blue-600 transition-colors cursor-pointer">
                           {thread.title}
                         </h3>
                       </Link>
-                      <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                         {thread.author.role === "guru" ? "Guru" : "Relawan"}
                       </Badge>
                       {thread.hasFile && (
@@ -158,13 +153,13 @@ export default function ForumPage() {
         </div>
 
         {filteredThreads.length === 0 && (
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white">
             <CardContent className="p-12 text-center">
               <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-600 mb-2">Tidak ada thread ditemukan</h3>
               <p className="text-gray-500 mb-4">Coba ubah filter pencarian atau buat thread baru</p>
               <Link href="/forum/create">
-                <Button className="bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500">
+                <Button className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800">
                   <Plus className="w-4 h-4 mr-2" />
                   Buat Thread Baru
                 </Button>
@@ -173,6 +168,6 @@ export default function ForumPage() {
           </Card>
         )}
       </div>
-    </div>
+    </AuthenticatedLayout>
   )
 }

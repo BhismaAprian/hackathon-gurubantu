@@ -9,14 +9,14 @@ import { mockThreads, mockResources } from "@/lib/mock-data"
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <Navbar />
 
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">
               Platform Kolaborasi untuk Guru Indonesia
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
@@ -27,7 +27,7 @@ export default function LandingPage() {
               <Link href="/register">
                 <Button
                   size="lg"
-                  className="px-8 py-4 bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-lg"
+                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-500 hover:to-blue-700 text-lg"
                 >
                   Bergabung Sekarang
                 </Button>
@@ -36,7 +36,7 @@ export default function LandingPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="px-8 py-4 text-lg border-orange-300 text-orange-600 hover:bg-orange-50"
+                  className="px-8 py-4 text-lg border-blue-300 text-blue-600 hover:bg-blue-50"
                 >
                   Masuk ke Akun
                 </Button>
@@ -59,7 +59,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
               <CardHeader className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Users className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-xl text-gray-800">Komunitas Supportif</CardTitle>
@@ -107,15 +107,18 @@ export default function LandingPage() {
               <p className="text-gray-600">Lihat diskusi terbaru dari komunitas guru</p>
             </div>
             <Link href="/login">
-              <Button variant="outline" className="flex items-center space-x-2">
-                <span>Lihat Semua</span>
+              <Button
+                variant="outline"
+                className="flex items-center space-x-2 border-blue-300 text-blue-600 hover:bg-blue-50"
+              >
+                <span>Bergabung untuk Akses Penuh</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
 
           <div className="grid gap-6">
-            {mockThreads.slice(0, 3).map((thread) => (
+            {mockThreads.slice(0, 2).map((thread) => (
               <Card key={thread.id} className="border-0 shadow-md hover:shadow-lg transition-shadow bg-white">
                 <CardContent className="p-6">
                   <div className="flex items-start space-x-4">
@@ -131,11 +134,11 @@ export default function LandingPage() {
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
                         <h3 className="font-semibold text-gray-800">{thread.title}</h3>
-                        <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                           {thread.author.role === "guru" ? "Guru" : "Relawan"}
                         </Badge>
                       </div>
-                      <p className="text-gray-600 mb-3 line-clamp-2">{thread.content}</p>
+                      <p className="text-gray-600 mb-3 line-clamp-1">{thread.content.substring(0, 100)}...</p>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <span className="flex items-center space-x-1">
@@ -143,18 +146,11 @@ export default function LandingPage() {
                             <span>{thread.votes}</span>
                           </span>
                           <span>{thread.comments.length} komentar</span>
-                          <div className="flex space-x-1">
-                            {thread.tags.map((tag) => (
-                              <Badge key={tag} variant="outline" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
                         </div>
                         <Link href="/login">
-                          <Button size="sm" variant="ghost" className="flex items-center space-x-1">
+                          <Button size="sm" variant="ghost" className="flex items-center space-x-1 text-blue-600">
                             <Lock className="w-3 h-3" />
-                            <span>Baca Selengkapnya</span>
+                            <span>Login untuk Baca</span>
                           </Button>
                         </Link>
                       </div>
@@ -218,7 +214,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 bg-gradient-to-r from-orange-400 to-pink-400">
+      <section className="py-16 px-4 bg-gradient-to-r from-blue-500 to-blue-700">
         <div className="container mx-auto text-center">
           <div className="max-w-2xl mx-auto text-white">
             <h2 className="text-3xl font-bold mb-4">Siap Bergabung dengan Komunitas?</h2>
@@ -229,7 +225,7 @@ export default function LandingPage() {
               <Button
                 size="lg"
                 variant="secondary"
-                className="px-8 py-4 text-lg bg-white text-orange-600 hover:bg-gray-50"
+                className="px-8 py-4 text-lg bg-white text-blue-600 hover:bg-gray-50"
               >
                 Daftar Gratis Sekarang
               </Button>
@@ -244,7 +240,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-pink-400 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">GB</span>
                 </div>
                 <span className="font-bold text-xl">GuruBantu</span>
@@ -258,17 +254,17 @@ export default function LandingPage() {
               <h3 className="font-semibold mb-4">Platform</h3>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href="/forum" className="hover:text-white">
+                  <Link href="/forum" className="hover:text-white hover:text-blue-600">
                     Forum
                   </Link>
                 </li>
                 <li>
-                  <Link href="/library" className="hover:text-white">
+                  <Link href="/library" className="hover:text-white hover:text-blue-600">
                     Library
                   </Link>
                 </li>
                 <li>
-                  <Link href="/about" className="hover:text-white">
+                  <Link href="/about" className="hover:text-white hover:text-blue-600">
                     Tentang Kami
                   </Link>
                 </li>
@@ -279,17 +275,17 @@ export default function LandingPage() {
               <h3 className="font-semibold mb-4">Dukungan</h3>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href="/help" className="hover:text-white">
+                  <Link href="/help" className="hover:text-white hover:text-blue-600">
                     Bantuan
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="hover:text-white">
+                  <Link href="/contact" className="hover:text-white hover:text-blue-600">
                     Kontak
                   </Link>
                 </li>
                 <li>
-                  <Link href="/faq" className="hover:text-white">
+                  <Link href="/faq" className="hover:text-white hover:text-blue-600">
                     FAQ
                   </Link>
                 </li>
@@ -300,12 +296,12 @@ export default function LandingPage() {
               <h3 className="font-semibold mb-4">Legal</h3>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href="/privacy" className="hover:text-white">
+                  <Link href="/privacy" className="hover:text-white hover:text-blue-600">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/terms" className="hover:text-white">
+                  <Link href="/terms" className="hover:text-white hover:text-blue-600">
                     Terms of Service
                   </Link>
                 </li>

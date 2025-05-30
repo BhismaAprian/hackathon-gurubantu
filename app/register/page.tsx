@@ -65,7 +65,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <Navbar />
 
       <div className="flex items-center justify-center py-12 px-4">
@@ -91,7 +91,7 @@ export default function RegisterPage() {
                     placeholder="Nama lengkap Anda"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="border-gray-200 focus:border-orange-400"
+                    className="border-gray-200 focus:border-blue-500"
                   />
                 </div>
 
@@ -103,7 +103,7 @@ export default function RegisterPage() {
                     placeholder="nama@email.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="border-gray-200 focus:border-orange-400"
+                    className="border-gray-200 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -119,7 +119,7 @@ export default function RegisterPage() {
                       placeholder="Minimal 8 karakter"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="border-gray-200 focus:border-orange-400 pr-10"
+                      className="border-gray-200 focus:border-blue-500 pr-10"
                     />
                     <Button
                       type="button"
@@ -141,7 +141,7 @@ export default function RegisterPage() {
                     placeholder="Ulangi password"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className="border-gray-200 focus:border-orange-400"
+                    className="border-gray-200 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -150,7 +150,7 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <Label>Peran *</Label>
                 <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
-                  <SelectTrigger className="border-gray-200 focus:border-orange-400">
+                  <SelectTrigger className="border-gray-200 focus:border-blue-500">
                     <SelectValue placeholder="Pilih peran Anda" />
                   </SelectTrigger>
                   <SelectContent>
@@ -168,7 +168,7 @@ export default function RegisterPage() {
                     value={formData.subject}
                     onValueChange={(value) => setFormData({ ...formData, subject: value })}
                   >
-                    <SelectTrigger className="border-gray-200 focus:border-orange-400">
+                    <SelectTrigger className="border-gray-200 focus:border-blue-500">
                       <SelectValue placeholder="Pilih mata pelajaran" />
                     </SelectTrigger>
                     <SelectContent>
@@ -187,7 +187,7 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <Label>Jenjang Pendidikan</Label>
                   <Select value={formData.level} onValueChange={(value) => setFormData({ ...formData, level: value })}>
-                    <SelectTrigger className="border-gray-200 focus:border-orange-400">
+                    <SelectTrigger className="border-gray-200 focus:border-blue-500">
                       <SelectValue placeholder="Pilih jenjang" />
                     </SelectTrigger>
                     <SelectContent>
@@ -208,7 +208,7 @@ export default function RegisterPage() {
                   value={formData.experience}
                   onValueChange={(value) => setFormData({ ...formData, experience: value })}
                 >
-                  <SelectTrigger className="border-gray-200 focus:border-orange-400">
+                  <SelectTrigger className="border-gray-200 focus:border-blue-500">
                     <SelectValue placeholder="Pilih pengalaman mengajar" />
                   </SelectTrigger>
                   <SelectContent>
@@ -245,7 +245,7 @@ export default function RegisterPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500"
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800"
                 disabled={isLoading}
               >
                 {isLoading ? "Mendaftar..." : "Daftar Sekarang"}
@@ -253,7 +253,7 @@ export default function RegisterPage() {
 
               <div className="text-center text-sm text-gray-600">
                 Sudah punya akun?{" "}
-                <Link href="/login" className="text-orange-600 hover:text-orange-700 font-medium">
+                <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
                   Masuk di sini
                 </Link>
               </div>

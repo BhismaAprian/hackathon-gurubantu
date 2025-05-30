@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Plus, Download, FileText, Video, ImageIcon, Filter } from "lucide-react"
-import Navbar from "@/components/navbar"
+import AuthenticatedLayout from "@/components/authenticated-layout"
 import { mockResources } from "@/lib/mock-data"
 
 export default function LibraryPage() {
@@ -39,10 +39,8 @@ export default function LibraryPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50">
-      <Navbar isAuthenticated />
-
-      <div className="container mx-auto px-4 py-8">
+    <AuthenticatedLayout>
+      <div className="p-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
@@ -50,7 +48,7 @@ export default function LibraryPage() {
             <p className="text-gray-600">Koleksi sumber daya pembelajaran untuk mendukung kegiatan mengajar</p>
           </div>
           <Link href="/library/upload">
-            <Button className="bg-gradient-to-r from-green-400 to-teal-400 hover:from-green-500 hover:to-teal-500 mt-4 md:mt-0">
+            <Button className="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 mt-4 md:mt-0">
               <Plus className="w-4 h-4 mr-2" />
               Upload Resource
             </Button>
@@ -58,7 +56,7 @@ export default function LibraryPage() {
         </div>
 
         {/* Search and Filters */}
-        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm mb-6">
+        <Card className="border-0 shadow-lg bg-white mb-6">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
@@ -67,7 +65,7 @@ export default function LibraryPage() {
                   placeholder="Cari resource, judul, atau deskripsi..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 border-gray-200 focus:border-orange-400"
+                  className="pl-10 border-gray-200 focus:border-blue-500"
                 />
               </div>
               <div className="flex gap-2">
@@ -110,13 +108,10 @@ export default function LibraryPage() {
           {filteredResources.map((resource) => {
             const FileIcon = getFileIcon(resource.type)
             return (
-              <Card
-                key={resource.id}
-                className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow"
-              >
+              <Card key={resource.id} className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
                 <CardHeader>
                   <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-400 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
                       <FileIcon className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex space-x-2">
@@ -158,7 +153,7 @@ export default function LibraryPage() {
                     </Link>
                     <Button
                       size="sm"
-                      className="bg-gradient-to-r from-green-400 to-teal-400 hover:from-green-500 hover:to-teal-500"
+                      className="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800"
                     >
                       <Download className="w-3 h-3 mr-1" />
                       Download
@@ -171,13 +166,13 @@ export default function LibraryPage() {
         </div>
 
         {filteredResources.length === 0 && (
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <Card className="border-0 shadow-lg bg-white">
             <CardContent className="p-12 text-center">
               <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-600 mb-2">Tidak ada resource ditemukan</h3>
               <p className="text-gray-500 mb-4">Coba ubah filter pencarian atau upload resource baru</p>
               <Link href="/library/upload">
-                <Button className="bg-gradient-to-r from-green-400 to-teal-400 hover:from-green-500 hover:to-teal-500">
+                <Button className="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800">
                   <Plus className="w-4 h-4 mr-2" />
                   Upload Resource
                 </Button>
@@ -186,6 +181,6 @@ export default function LibraryPage() {
           </Card>
         )}
       </div>
-    </div>
+    </AuthenticatedLayout>
   )
 }

@@ -231,3 +231,39 @@ export const mockNotifications: Notification[] = [
 ]
 
 export const currentUser = mockUsers[0]
+
+// Mock user history data
+export const mockUserHistory = {
+  threads: [
+    {
+      id: "1",
+      title: "Tips Mengajar Matematika untuk Siswa SD di Daerah Terpencil",
+      status: "active",
+      replies: 8,
+      lastActivity: "2024-03-15T10:30:00Z",
+      subject: "Matematika",
+    },
+    {
+      id: "4",
+      title: "Strategi Pembelajaran Jarak Jauh yang Efektif",
+      status: "closed",
+      replies: 12,
+      lastActivity: "2024-03-10T14:20:00Z",
+      subject: "Umum",
+    },
+  ],
+  comments: [
+    {
+      threadId: "2",
+      threadTitle: "Strategi Pembelajaran Bahasa Indonesia yang Menyenangkan",
+      comment: "Saya setuju dengan pendekatan ini. Di sekolah saya juga menerapkan metode serupa.",
+      createdAt: "2024-03-14T09:15:00Z",
+    },
+    {
+      threadId: "3",
+      threadTitle: "Eksperimen Sains Sederhana dengan Bahan Seadanya",
+      comment: "Terima kasih idenya! Akan saya coba di kelas besok.",
+      createdAt: "2024-03-13T16:45:00Z",
+    },
+  ],
+}

@@ -18,45 +18,31 @@ export default function Navbar({ isAuthenticated = false }: NavbarProps) {
   const unreadCount = mockNotifications.filter((n) => !n.read).length
 
   return (
-    <nav className="bg-white border-b border-orange-100 sticky top-0 z-50">
+    <nav className="bg-white border-b border-blue-100 sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-pink-400 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">GB</span>
             </div>
             <span className="font-bold text-xl text-gray-800">GuruBantu</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {isAuthenticated ? (
-              <>
-                <Link href="/dashboard" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Dashboard
-                </Link>
-                <Link href="/forum" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Forum
-                </Link>
-                <Link href="/library" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Library
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Home
-                </Link>
-                <Link href="/#features" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Features
-                </Link>
-                <Link href="/#about" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  About
-                </Link>
-              </>
-            )}
-          </div>
+          {/* Desktop Navigation - Only show for non-authenticated */}
+          {!isAuthenticated && (
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors">
+                Home
+              </Link>
+              <Link href="/#features" className="text-gray-600 hover:text-blue-600 transition-colors">
+                Features
+              </Link>
+              <Link href="/#about" className="text-gray-600 hover:text-blue-600 transition-colors">
+                About
+              </Link>
+            </div>
+          )}
 
           {/* Right Side */}
           <div className="flex items-center space-x-4">
@@ -81,7 +67,7 @@ export default function Navbar({ isAuthenticated = false }: NavbarProps) {
                         <div key={notification.id} className="p-2 hover:bg-gray-50 rounded-md cursor-pointer">
                           <div className="flex items-start space-x-2">
                             <div
-                              className={`w-2 h-2 rounded-full mt-2 ${notification.read ? "bg-gray-300" : "bg-orange-500"}`}
+                              className={`w-2 h-2 rounded-full mt-2 ${notification.read ? "bg-gray-300" : "bg-blue-500"}`}
                             />
                             <div className="flex-1">
                               <p className="text-sm font-medium">{notification.title}</p>
@@ -119,13 +105,13 @@ export default function Navbar({ isAuthenticated = false }: NavbarProps) {
                     <DropdownMenuItem asChild>
                       <Link href="/profile" className="flex items-center space-x-2">
                         <User className="w-4 h-4" />
-                        <span>Profile</span>
+                        <span>View Profile</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/settings" className="flex items-center space-x-2">
+                      <Link href="/profile/edit" className="flex items-center space-x-2">
                         <Settings className="w-4 h-4" />
-                        <span>Settings</span>
+                        <span>Edit Profile</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -143,54 +129,40 @@ export default function Navbar({ isAuthenticated = false }: NavbarProps) {
                   <Button variant="ghost">Login</Button>
                 </Link>
                 <Link href="/register">
-                  <Button className="bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500">
+                  <Button className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800">
                     Register
                   </Button>
                 </Link>
               </>
             )}
 
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
+            {/* Mobile Menu Button - Only for non-authenticated */}
+            {!isAuthenticated && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </Button>
+            )}
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-orange-100 py-4">
+        {/* Mobile Menu - Only for non-authenticated */}
+        {!isAuthenticated && isMobileMenuOpen && (
+          <div className="md:hidden border-t border-blue-100 py-4">
             <div className="flex flex-col space-y-2">
-              {isAuthenticated ? (
-                <>
-                  <Link href="/dashboard" className="px-4 py-2 text-gray-600 hover:text-orange-500">
-                    Dashboard
-                  </Link>
-                  <Link href="/forum" className="px-4 py-2 text-gray-600 hover:text-orange-500">
-                    Forum
-                  </Link>
-                  <Link href="/library" className="px-4 py-2 text-gray-600 hover:text-orange-500">
-                    Library
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link href="/" className="px-4 py-2 text-gray-600 hover:text-orange-500">
-                    Home
-                  </Link>
-                  <Link href="/#features" className="px-4 py-2 text-gray-600 hover:text-orange-500">
-                    Features
-                  </Link>
-                  <Link href="/#about" className="px-4 py-2 text-gray-600 hover:text-orange-500">
-                    About
-                  </Link>
-                </>
-              )}
+              <Link href="/" className="px-4 py-2 text-gray-600 hover:text-blue-600">
+                Home
+              </Link>
+              <Link href="/#features" className="px-4 py-2 text-gray-600 hover:text-blue-600">
+                Features
+              </Link>
+              <Link href="/#about" className="px-4 py-2 text-gray-600 hover:text-blue-600">
+                About
+              </Link>
             </div>
           </div>
         )}

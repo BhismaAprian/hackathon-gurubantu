@@ -41,7 +41,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <Navbar />
 
       <div className="flex items-center justify-center py-12 px-4">
@@ -66,7 +66,7 @@ export default function LoginPage() {
                   placeholder="nama@email.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="border-gray-200 focus:border-orange-400"
+                  className="border-gray-200 focus:border-blue-500"
                 />
               </div>
 
@@ -79,7 +79,7 @@ export default function LoginPage() {
                     placeholder="Masukkan password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="border-gray-200 focus:border-orange-400 pr-10"
+                    className="border-gray-200 focus:border-blue-500 pr-10"
                   />
                   <Button
                     type="button"
@@ -94,14 +94,14 @@ export default function LoginPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <Link href="/forgot-password" className="text-sm text-orange-600 hover:text-orange-700">
+                <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
                   Lupa password?
                 </Link>
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500"
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800"
                 disabled={isLoading}
               >
                 {isLoading ? "Memproses..." : "Masuk"}
@@ -109,7 +109,7 @@ export default function LoginPage() {
 
               <div className="text-center text-sm text-gray-600">
                 Belum punya akun?{" "}
-                <Link href="/register" className="text-orange-600 hover:text-orange-700 font-medium">
+                <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
                   Daftar sekarang
                 </Link>
               </div>

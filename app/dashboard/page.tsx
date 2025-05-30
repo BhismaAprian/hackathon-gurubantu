@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Users, MessageSquare, BookOpen, Plus, Heart, Download } from "lucide-react"
 import Link from "next/link"
-import Navbar from "@/components/navbar"
+import AuthenticatedLayout from "@/components/authenticated-layout"
 import { mockThreads, mockResources, currentUser } from "@/lib/mock-data"
 
 export default function DashboardPage() {
@@ -16,10 +16,8 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50">
-      <Navbar isAuthenticated />
-
-      <div className="container mx-auto px-4 py-8">
+    <AuthenticatedLayout>
+      <div className="p-8">
         {/* Welcome Section */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-6">
@@ -44,7 +42,7 @@ export default function DashboardPage() {
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <Card key={index} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+            <Card key={index} className="border-0 shadow-lg bg-white">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -65,7 +63,7 @@ export default function DashboardPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Recent Activity */}
           <div className="lg:col-span-2">
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg bg-white">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -97,7 +95,7 @@ export default function DashboardPage() {
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
                         <h4 className="font-medium text-gray-800 text-sm">{thread.title}</h4>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
                           {thread.author.role === "guru" ? "Guru" : "Relawan"}
                         </Badge>
                       </div>
@@ -117,11 +115,37 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/*  Resources */}
+          {/* Quick Actions & Resources */}
           <div className="space-y-6">
+            {/* Quick Actions */}
+            <Card className="border-0 shadow-lg bg-white">
+              <CardHeader>
+                <CardTitle className="text-lg text-gray-800">Aksi Cepat</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Link href="/forum/create">
+                  <Button className="w-full justify-start bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Buat Thread Baru
+                  </Button>
+                </Link>
+                <Link href="/library/upload">
+                  <Button variant="outline" className="w-full justify-start">
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Upload Resource
+                  </Button>
+                </Link>
+                <Link href="/profile">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Users className="w-4 h-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
 
             {/* Recent Resources */}
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-lg bg-white">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg text-gray-800">Resource Terbaru</CardTitle>
@@ -161,6 +185,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </div>
+    </AuthenticatedLayout>
   )
 }
