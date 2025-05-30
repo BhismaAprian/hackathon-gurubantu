@@ -241,7 +241,6 @@ export default function ResourceDetailPage({ params }: ResourceDetailPageProps) 
                         Preview
                       </Button>
 
-
                       {isOwner && (
                         <>
                           <Button variant="outline">

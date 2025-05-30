@@ -20,12 +20,13 @@ import {
   Eye,
   User,
   Calendar,
-  MapPin,
   Tag,
   SortAsc,
+  Loader2,
 } from "lucide-react"
 import AuthenticatedLayout from "@/components/authenticated-layout"
-import { mockResources } from "@/lib/mock-data"
+import { useLibraryMaterials } from "@/hooks/use-library-materials"
+import type { LibraryFilters } from "@/lib/types"
 
 const SUBJECTS = [
   "Semua Mata Pelajaran",
@@ -41,21 +42,9 @@ const SUBJECTS = [
 
 const FILE_FORMATS = ["Semua Format", "PDF", "DOC", "PPT", "Video", "Gambar"]
 
-const REGIONS = [
-  "Semua Wilayah",
-  "DKI Jakarta",
-  "Jawa Barat",
-  "Jawa Tengah",
-  "Jawa Timur",
-  "Sumatera Utara",
-  "Sumatera Barat",
-  "Kalimantan Timur",
-  "Sulawesi Selatan",
-]
-
 const SORT_OPTIONS = [
   { value: "created_at", label: "Terbaru" },
-  { value: "downloads", label: "Paling Banyak Diunduh" },
+  { value: "download_count", label: "Paling Banyak Diunduh" },
   { value: "rating", label: "Rating Tertinggi" },
   { value: "title", label: "Nama A-Z" },
 ]
@@ -64,32 +53,50 @@ export default function LibraryPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedSubject, setSelectedSubject] = useState("Semua Mata Pelajaran")
   const [selectedFormat, setSelectedFormat] = useState("Semua Format")
-  const [selectedRegion, setSelectedRegion] = useState("Semua Wilayah")
   const [sortBy, setSortBy] = useState("created_at")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
+  // Build filters for the hook
+  const filters: LibraryFilters = {
+    search: searchQuery || undefined,
+    subject: selectedSubject !== "Semua Mata Pelajaran" ? selectedSubject : undefined,
+    file_type: selectedFormat !== "Semua Format" ? selectedFormat.toLowerCase() : undefined,
+    sortBy: sortBy as any,
+    sortOrder: "desc",
+    is_approved: true, // Only show approved materials
+  }
+
+  const { materials, loading, error, fetchMaterials } = useLibraryMaterials(filters)
+
   const getFileIcon = (type: string) => {
-    switch (type) {
+    switch (type?.toLowerCase()) {
       case "pdf":
         return <FileText className="w-8 h-8 text-red-600" />
       case "ppt":
+      case "pptx":
         return (
           <div className="w-8 h-8 bg-orange-600 rounded flex items-center justify-center text-white text-xs font-bold">
             PPT
           </div>
         )
       case "doc":
+      case "docx":
         return (
           <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">
             DOC
           </div>
         )
+      case "mp4":
+      case "mov":
       case "video":
         return (
           <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center text-white text-xs font-bold">
             VID
           </div>
         )
+      case "jpg":
+      case "jpeg":
+      case "png":
       case "image":
         return <ImageIcon className="w-8 h-8 text-green-600" />
       default:
@@ -97,35 +104,27 @@ export default function LibraryPage() {
     }
   }
 
-  const formatFileSize = (sizeStr: string) => {
-    return sizeStr
+  const formatFileSize = (size?: number) => {
+    if (!size) return "Unknown"
+    const mb = size / (1024 * 1024)
+    return `${mb.toFixed(1)} MB`
   }
 
-  // Filter resources based on selected filters
-  const filteredResources = mockResources.filter((resource) => {
-    const matchesSearch =
-      resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      resource.description.toLowerCase().includes(searchQuery.toLowerCase())
-
-    const matchesSubject = selectedSubject === "Semua Mata Pelajaran" || resource.subject === selectedSubject
-
-    const matchesFormat = selectedFormat === "Semua Format" || resource.type.toUpperCase() === selectedFormat
-
-    return matchesSearch && matchesSubject && matchesFormat
-  })
-
-  // Sort resources
-  const sortedResources = [...filteredResources].sort((a, b) => {
-    switch (sortBy) {
-      case "downloads":
-        return b.downloadCount - a.downloadCount
-      case "title":
-        return a.title.localeCompare(b.title)
-      case "created_at":
-      default:
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    }
-  })
+  if (error) {
+    return (
+      <AuthenticatedLayout>
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-7xl mx-auto py-8 px-4">
+            <Card className="p-12 text-center">
+              <h3 className="text-lg font-semibold text-red-600 mb-2">Error Loading Library</h3>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <Button onClick={fetchMaterials}>Try Again</Button>
+            </Card>
+          </div>
+        </div>
+      </AuthenticatedLayout>
+    )
+  }
 
   return (
     <AuthenticatedLayout>
@@ -195,25 +194,14 @@ export default function LibraryPage() {
                   ))}
                 </SelectContent>
               </Select>
-
-              <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-                <SelectTrigger className="w-40 border-gray-200 focus:border-green-500">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {REGIONS.map((region) => (
-                    <SelectItem key={region} value={region}>
-                      {region}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Sort and View Controls */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">{sortedResources.length} materi ditemukan</span>
+                <span className="text-sm text-gray-600">
+                  {loading ? "Memuat..." : `${materials.length} materi ditemukan`}
+                </span>
                 <div className="flex items-center space-x-2">
                   <SortAsc className="w-4 h-4 text-gray-500" />
                   <span className="text-sm text-gray-600">Urutkan:</span>
@@ -253,186 +241,202 @@ export default function LibraryPage() {
             </div>
           </Card>
 
-          {/* Materials Grid/List */}
-          {viewMode === "grid" ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedResources.map((material) => (
-                <Link key={material.id} href={`/library/resource/${material.id}`}>
-                  <Card className="h-full overflow-hidden hover:shadow-lg transition-all duration-200 border-0 shadow-md">
-                    {/* Preview Area */}
-                    <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
-                      {getFileIcon(material.type)}
-                      <Badge className="absolute top-3 right-3 bg-green-500 text-white">Approved</Badge>
-                      <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium">
-                        {formatFileSize(material.fileSize)}
-                      </div>
-                    </div>
-
-                    <CardContent className="p-6">
-                      {/* Header */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex flex-wrap gap-1">
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                            {material.subject}
-                          </Badge>
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                            {material.level}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center space-x-1 text-amber-500">
-                          <Star className="w-4 h-4 fill-current" />
-                          <span className="text-xs font-medium">4.8</span>
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{material.title}</h3>
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{material.description}</p>
-
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        <span className="inline-flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
-                          <Tag className="w-3 h-3 mr-1" />
-                          pembelajaran
-                        </span>
-                        <span className="inline-flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
-                          <Tag className="w-3 h-3 mr-1" />
-                          interaktif
-                        </span>
-                      </div>
-
-                      {/* Footer */}
-                      <div className="flex items-center justify-between text-xs text-gray-500 pt-4 border-t border-gray-100">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center space-x-1">
-                            <User className="w-3 h-3" />
-                            <span>{material.author.name}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <MapPin className="w-3 h-3" />
-                            <span>Jakarta</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center space-x-1">
-                            <Eye className="w-3 h-3" />
-                            <span>245</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Download className="w-3 h-3" />
-                            <span>{material.downloadCount}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {sortedResources.map((material) => (
-                <Link key={material.id} href={`/library/resource/${material.id}`}>
-                  <Card className="p-6 hover:shadow-lg transition-all duration-200 border-0 shadow-md">
-                    <div className="flex items-start space-x-6">
-                      {/* File Icon */}
-                      <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center">
-                        {getFileIcon(material.type)}
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                              {material.subject}
-                            </Badge>
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                              {material.level}
-                            </Badge>
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                              Approved
-                            </Badge>
-                          </div>
-                          <div className="flex items-center space-x-1 text-amber-500">
-                            <Star className="w-4 h-4 fill-current" />
-                            <span className="text-sm font-medium">4.8</span>
-                          </div>
-                        </div>
-
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-1">{material.title}</h3>
-                        <p className="text-gray-600 mb-3 line-clamp-2">{material.description}</p>
-
-                        {/* Tags */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          <span className="inline-flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
-                            <Tag className="w-3 h-3 mr-1" />
-                            pembelajaran
-                          </span>
-                          <span className="inline-flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
-                            <Tag className="w-3 h-3 mr-1" />
-                            interaktif
-                          </span>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="flex items-center justify-between text-sm text-gray-500">
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-1">
-                              <User className="w-4 h-4" />
-                              <span>{material.author.name}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <MapPin className="w-4 h-4" />
-                              <span>Jakarta</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="w-4 h-4" />
-                              <span>{new Date(material.createdAt).toLocaleDateString("id-ID")}</span>
-                            </div>
-                            <span className="text-gray-400">•</span>
-                            <span>{formatFileSize(material.fileSize)}</span>
-                          </div>
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-1">
-                              <Eye className="w-4 h-4" />
-                              <span>245</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Download className="w-4 h-4" />
-                              <span>{material.downloadCount}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* Load More */}
-          {sortedResources.length > 0 && (
-            <div className="text-center mt-8">
-              <Button variant="outline" size="lg">
-                Muat Lebih Banyak
-              </Button>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {sortedResources.length === 0 && (
+          {/* Loading State */}
+          {loading && (
             <Card className="p-12 text-center">
-              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada materi ditemukan</h3>
-              <p className="text-gray-600 mb-6">
-                Coba ubah filter pencarian atau{" "}
-                <Link href="/library/upload" className="text-green-600 hover:text-green-700 font-medium">
-                  bagikan materi pertama Anda
-                </Link>
-              </p>
+              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-green-500" />
+              <p className="text-gray-600">Memuat materi pembelajaran...</p>
             </Card>
+          )}
+
+          {/* Materials Grid/List */}
+          {!loading && (
+            <>
+              {viewMode === "grid" ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {materials.map((material) => (
+                    <Link key={material.id} href={`/library/resource/${material.id}`}>
+                      <Card className="h-full overflow-hidden hover:shadow-lg transition-all duration-200 border-0 shadow-md">
+                        {/* Preview Area */}
+                        <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
+                          {getFileIcon(material.file_type)}
+                          <Badge className="absolute top-3 right-3 bg-green-500 text-white">
+                            {material.is_approved ? "Approved" : "Pending"}
+                          </Badge>
+                          <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium">
+                            {formatFileSize(material.file_size)}
+                          </div>
+                        </div>
+
+                        <CardContent className="p-6">
+                          {/* Header */}
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex flex-wrap gap-1">
+                              {material.subject && (
+                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                  {material.subject}
+                                </Badge>
+                              )}
+                              {material.education_level && (
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                  {material.education_level.toUpperCase()}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center space-x-1 text-amber-500">
+                              <Star className="w-4 h-4 fill-current" />
+                              <span className="text-xs font-medium">{material.rating.toFixed(1)}</span>
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{material.title}</h3>
+                          <p className="text-gray-600 text-sm mb-4 line-clamp-2">{material.description}</p>
+
+                          {/* Tags */}
+                          <div className="flex flex-wrap gap-1 mb-4">
+                            {material.tags?.slice(0, 2).map((tag, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md"
+                              >
+                                <Tag className="w-3 h-3 mr-1" />
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+
+                          {/* Footer */}
+                          <div className="flex items-center justify-between text-xs text-gray-500 pt-4 border-t border-gray-100">
+                            <div className="flex items-center space-x-3">
+                              <div className="flex items-center space-x-1">
+                                <User className="w-3 h-3" />
+                                <span>{material.uploader?.full_name}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <div className="flex items-center space-x-1">
+                                <Eye className="w-3 h-3" />
+                                <span>{material.view_count}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Download className="w-3 h-3" />
+                                <span>{material.download_count}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {materials.map((material) => (
+                    <Link key={material.id} href={`/library/resource/${material.id}`}>
+                      <Card className="p-6 hover:shadow-lg transition-all duration-200 border-0 shadow-md">
+                        <div className="flex items-start space-x-6">
+                          {/* File Icon */}
+                          <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center">
+                            {getFileIcon(material.file_type)}
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex flex-wrap gap-2">
+                                {material.subject && (
+                                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                    {material.subject}
+                                  </Badge>
+                                )}
+                                {material.education_level && (
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                    {material.education_level.toUpperCase()}
+                                  </Badge>
+                                )}
+                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                  {material.is_approved ? "Approved" : "Pending"}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center space-x-1 text-amber-500">
+                                <Star className="w-4 h-4 fill-current" />
+                                <span className="text-sm font-medium">{material.rating.toFixed(1)}</span>
+                              </div>
+                            </div>
+
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-1">{material.title}</h3>
+                            <p className="text-gray-600 mb-3 line-clamp-2">{material.description}</p>
+
+                            {/* Tags */}
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {material.tags?.slice(0, 3).map((tag, index) => (
+                                <span
+                                  key={index}
+                                  className="inline-flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md"
+                                >
+                                  <Tag className="w-3 h-3 mr-1" />
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+
+                            {/* Footer */}
+                            <div className="flex items-center justify-between text-sm text-gray-500">
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center space-x-1">
+                                  <User className="w-4 h-4" />
+                                  <span>{material.uploader?.full_name}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>{new Date(material.created_at).toLocaleDateString("id-ID")}</span>
+                                </div>
+                                <span className="text-gray-400">•</span>
+                                <span>{formatFileSize(material.file_size)}</span>
+                              </div>
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center space-x-1">
+                                  <Eye className="w-4 h-4" />
+                                  <span>{material.view_count}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <Download className="w-4 h-4" />
+                                  <span>{material.download_count}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Load More */}
+              {materials.length > 0 && (
+                <div className="text-center mt-8">
+                  <Button variant="outline" size="lg">
+                    Muat Lebih Banyak
+                  </Button>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {materials.length === 0 && (
+                <Card className="p-12 text-center">
+                  <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada materi ditemukan</h3>
+                  <p className="text-gray-600 mb-6">
+                    Coba ubah filter pencarian atau{" "}
+                    <Link href="/library/upload" className="text-green-600 hover:text-green-700 font-medium">
+                      bagikan materi pertama Anda
+                    </Link>
+                  </p>
+                </Card>
+              )}
+            </>
           )}
         </div>
       </div>
