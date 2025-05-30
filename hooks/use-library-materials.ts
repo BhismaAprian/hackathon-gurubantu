@@ -120,7 +120,7 @@ export function useLibraryMaterials(filters?: LibraryFilters) {
     }
   }
 
-  const incrementDownloadCount = async (id: string) => {
+  const incrementDownloadCount = async () => {
     try {
       const { error } = await supabase
         .from("library_materials")
@@ -128,12 +128,13 @@ export function useLibraryMaterials(filters?: LibraryFilters) {
         .eq("id", id)
 
       if (error) throw error
+      await fetchMaterial() // Refresh the material data
     } catch (err) {
       console.error("Failed to increment download count:", err)
     }
   }
 
-  const incrementViewCount = async (id: string) => {
+  const incrementViewCount = async () => {
     try {
       const { error } = await supabase
         .from("library_materials")
@@ -141,6 +142,7 @@ export function useLibraryMaterials(filters?: LibraryFilters) {
         .eq("id", id)
 
       if (error) throw error
+      await fetchMaterial() // Refresh the material data
     } catch (err) {
       console.error("Failed to increment view count:", err)
     }
@@ -199,5 +201,6 @@ export function useLibraryMaterial(id: string) {
     loading,
     error,
     refetch: fetchMaterial,
+    
   }
 }

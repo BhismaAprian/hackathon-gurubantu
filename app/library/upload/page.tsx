@@ -251,7 +251,7 @@ export default function UploadResourcePage() {
               </div>
 
               {/* Curriculum */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="curriculum">Kurikulum</Label>
                 <Input
                   id="curriculum"
@@ -261,7 +261,7 @@ export default function UploadResourcePage() {
                   className="border-gray-200 focus:border-green-500"
                   disabled={isLoading}
                 />
-              </div>
+              </div> */}
 
               {/* Learning Objectives */}
               <div className="space-y-2">
