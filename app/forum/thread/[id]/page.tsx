@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 "use client";
 
 import React from "react";
@@ -12,21 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-=======
-"use client"
-
-import React from "react"
-import { useState } from "react"
-import { notFound } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
->>>>>>> Stashed changes
 import {
   MessageSquare,
   Share2,
@@ -42,7 +26,6 @@ import {
   Paperclip,
   Sparkles,
   Clock,
-<<<<<<< Updated upstream
 } from "lucide-react";
 import AuthenticatedLayout from "@/components/authenticated-layout";
 import {
@@ -54,14 +37,6 @@ import {
 
 interface ThreadDetailPageProps {
   params: { id: string } // Perbaikan 1: params adalah objek langsung, bukan Promise
-=======
-} from "lucide-react"
-import AuthenticatedLayout from "@/components/authenticated-layout"
-import { mockThreads, currentUser, generateAIResponse, type Comment } from "@/lib/mock-data"
-
-interface ThreadDetailPageProps {
-  params: { id: string } 
->>>>>>> Stashed changes
 }
 
 interface VoteState {
@@ -72,11 +47,7 @@ interface VoteState {
 }
 
 export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
-<<<<<<< Updated upstream
   const { id } = params // Perbaikan 2: langsung ambil id dari params
-=======
-  const { id } = params 
->>>>>>> Stashed changes
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState("")
   const [commentFile, setCommentFile] = useState<File | null>(null)
@@ -87,7 +58,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
 
   // Initialize params and thread data
   React.useEffect(() => {
-<<<<<<< Updated upstream
     const threadId = params.id;
     const thread = mockThreads.find((t) => t.id === threadId);
     if (thread) {
@@ -110,32 +80,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
   }, [params.id]);
 
   const thread = mockThreads.find((t) => t.id === id);
-=======
-    params.then(({ id: threadId }) => {
-      setId(threadId)
-      const thread = mockThreads.find((t) => t.id === threadId)
-      if (thread) {
-        setComments(thread.comments)
-        // Initialize vote states
-        const initialVotes: VoteState = {
-          [`thread-${threadId}`]: {
-            userVote: null,
-            totalVotes: thread.votes,
-          },
-        }
-        thread.comments.forEach((comment) => {
-          initialVotes[`comment-${comment.id}`] = {
-            userVote: null,
-            totalVotes: comment.votes,
-          }
-        })
-        setVoteStates(initialVotes)
-      }
-    })
-  }, [params])
-
-  const thread = mockThreads.find((t) => t.id === id)
->>>>>>> Stashed changes
 
   if (!thread) {
     notFound();
@@ -143,7 +87,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
 
   const handleVote = (itemId: string, voteType: "up" | "down") => {
     setVoteStates((prev) => {
-<<<<<<< Updated upstream
       const current = prev[itemId] || { userVote: null, totalVotes: 0 };
       let newVote: "up" | "down" | null = voteType;
       let voteDelta = 0;
@@ -158,22 +101,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
       } else {
         // Change vote
         voteDelta = voteType === "up" ? 2 : -2;
-=======
-      const current = prev[itemId] || { userVote: null, totalVotes: 0 }
-      let newVote: "up" | "down" | null = voteType
-      let voteDelta = 0
-
-      if (current.userVote === voteType) {
-        // Remove vote if clicking same button
-        newVote = null
-        voteDelta = voteType === "up" ? -1 : 1
-      } else if (current.userVote === null) {
-        // New vote
-        voteDelta = voteType === "up" ? 1 : -1
-      } else {
-        // Change vote
-        voteDelta = voteType === "up" ? 2 : -2
->>>>>>> Stashed changes
       }
 
       return {
@@ -182,7 +109,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
           userVote: newVote,
           totalVotes: current.totalVotes + voteDelta,
         },
-<<<<<<< Updated upstream
       };
     });
   };
@@ -191,16 +117,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
     if (!newComment.trim()) return;
 
     const commentId = `comment-${Date.now()}`;
-=======
-      }
-    })
-  }
-
-  const handleAddComment = () => {
-    if (!newComment.trim()) return
-
-    const commentId = `comment-${Date.now()}`
->>>>>>> Stashed changes
     const comment: Comment = {
       id: commentId,
       content: newComment,
@@ -209,22 +125,15 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
       votes: 0,
       hasFile: !!commentFile,
       fileName: commentFile?.name,
-<<<<<<< Updated upstream
     };
 
     setComments((prev) => [...prev, comment]);
-=======
-    }
-
-    setComments((prev) => [...prev, comment])
->>>>>>> Stashed changes
     setVoteStates((prev) => ({
       ...prev,
       [`comment-${commentId}`]: {
         userVote: null,
         totalVotes: 0,
       },
-<<<<<<< Updated upstream
     }));
     setNewComment("");
     setCommentFile(null);
@@ -240,30 +149,12 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
       aiComment.id = aiCommentId;
 
       setComments((prev) => [...prev, aiComment]);
-=======
-    }))
-    setNewComment("")
-    setCommentFile(null)
-  }
-
-  const handleAIAssist = async () => {
-    setIsAIGenerating(true)
-
-    // Simulate AI processing time
-    setTimeout(() => {
-      const aiCommentId = `ai-comment-${Date.now()}`
-      const aiComment = generateAIResponse(thread.title, thread.content)
-      aiComment.id = aiCommentId
-
-      setComments((prev) => [...prev, aiComment])
->>>>>>> Stashed changes
       setVoteStates((prev) => ({
         ...prev,
         [`comment-${aiCommentId}`]: {
           userVote: null,
           totalVotes: 0,
         },
-<<<<<<< Updated upstream
       }));
       setIsAIGenerating(false);
     }, 2000);
@@ -315,54 +206,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
     userVote: null,
     totalVotes: thread.votes,
   };
-=======
-      }))
-      setIsAIGenerating(false)
-    }, 2000)
-  }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setCommentFile(file)
-    }
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(true)
-  }
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-    const files = e.dataTransfer.files
-    if (files.length > 0) {
-      setCommentFile(files[0])
-    }
-  }
-
-  const getFileIcon = (file: File) => {
-    if (file.type.startsWith("image/")) return ImageIcon
-    if (file.type.includes("pdf")) return FileText
-    return File
-  }
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes"
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  }
-
-  const threadVoteState = voteStates[`thread-${id}`] || { userVote: null, totalVotes: thread.votes }
->>>>>>> Stashed changes
 
   return (
     <AuthenticatedLayout>
@@ -382,18 +225,8 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center space-x-3 mb-3">
-<<<<<<< Updated upstream
-                  <h1 className="text-2xl font-bold text-gray-800 leading-tight">
-                    {thread.title}
-                  </h1>
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-100 text-blue-700 font-medium"
-                  >
-=======
                   <h1 className="text-2xl font-bold text-gray-800 leading-tight">{thread.title}</h1>
                   <Badge variant="secondary" className="bg-blue-100 text-blue-700 font-medium">
->>>>>>> Stashed changes
                     {thread.author.role === "guru" ? "Guru" : "Relawan"}
                   </Badge>
                 </div>
@@ -406,26 +239,12 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                   </span>
                   <span className="flex items-center space-x-1">
                     <Clock className="w-4 h-4" />
-<<<<<<< Updated upstream
-                    <span>
-                      {new Date(thread.createdAt).toLocaleDateString("id-ID")}
-                    </span>
-=======
                     <span>{new Date(thread.createdAt).toLocaleDateString("id-ID")}</span>
->>>>>>> Stashed changes
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {thread.tags.map((tag) => (
-<<<<<<< Updated upstream
-                    <Badge
-                      key={tag}
-                      variant="outline"
-                      className="text-xs bg-white border-blue-200 text-blue-600"
-                    >
-=======
                     <Badge key={tag} variant="outline" className="text-xs bg-white border-blue-200 text-blue-600">
->>>>>>> Stashed changes
                       {tag}
                     </Badge>
                   ))}
@@ -435,13 +254,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
           </CardHeader>
           <CardContent className="p-6">
             <div className="prose max-w-none mb-6">
-<<<<<<< Updated upstream
-              <p className="text-gray-700 leading-relaxed text-lg">
-                {thread.content}
-              </p>
-=======
               <p className="text-gray-700 leading-relaxed text-lg">{thread.content}</p>
->>>>>>> Stashed changes
             </div>
 
             {/* File Attachment */}
@@ -452,22 +265,10 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                     <FileText className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
-<<<<<<< Updated upstream
-                    <p className="font-semibold text-gray-800">
-                      {thread.fileName}
-                    </p>
-                    <p className="text-sm text-gray-600">PDF • 2.5 MB</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    className="bg-blue-500 hover:bg-blue-600 text-white shadow-md"
-                  >
-=======
                     <p className="font-semibold text-gray-800">{thread.fileName}</p>
                     <p className="text-sm text-gray-600">PDF • 2.5 MB</p>
                   </div>
                   <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white shadow-md">
->>>>>>> Stashed changes
                     <Download className="w-4 h-4 mr-2" />
                     Download
                   </Button>
@@ -497,13 +298,8 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                       threadVoteState.totalVotes > 0
                         ? "text-green-600"
                         : threadVoteState.totalVotes < 0
-<<<<<<< Updated upstream
-                        ? "text-red-600"
-                        : "text-gray-600"
-=======
                           ? "text-red-600"
                           : "text-gray-600"
->>>>>>> Stashed changes
                     }`}
                   >
                     {threadVoteState.totalVotes}
@@ -522,15 +318,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                   </Button>
                 </div>
 
-<<<<<<< Updated upstream
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-2"
-                >
-=======
                 <Button variant="outline" size="sm" className="flex items-center space-x-2">
->>>>>>> Stashed changes
                   <MessageSquare className="w-4 h-4" />
                   <span>{comments.length} Komentar</span>
                 </Button>
@@ -569,8 +357,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
             </h2>
           </CardHeader>
           <CardContent className="p-6">
-<<<<<<< Updated upstream
-=======
             {comments.length === 0 && (
               <div className="text-center py-12">
                 <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -578,7 +364,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                 <p className="text-gray-500">Jadilah yang pertama untuk memulai diskusi!</p>
               </div>
             )}
->>>>>>> Stashed changes
             {/* Enhanced Add Comment */}
             <div className="mb-8">
               <div className="flex items-start space-x-4">
@@ -603,30 +388,11 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
 
                   {/* Enhanced File Upload */}
                   <div className="space-y-3">
-<<<<<<< Updated upstream
-                    <Label className="text-sm font-medium text-gray-700">
-                      Lampiran (opsional)
-                    </Label>
-=======
                     <Label className="text-sm font-medium text-gray-700">Lampiran (opsional)</Label>
->>>>>>> Stashed changes
                     {commentFile ? (
                       <div className="flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                         <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
                           {(() => {
-<<<<<<< Updated upstream
-                            const FileIcon = getFileIcon(commentFile);
-                            return <FileIcon className="w-5 h-5 text-white" />;
-                          })()}
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-800">
-                            {commentFile.name}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {formatFileSize(commentFile.size)}
-                          </p>
-=======
                             const FileIcon = getFileIcon(commentFile)
                             return <FileIcon className="w-5 h-5 text-white" />
                           })()}
@@ -634,7 +400,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                         <div className="flex-1">
                           <p className="font-medium text-gray-800">{commentFile.name}</p>
                           <p className="text-sm text-gray-600">{formatFileSize(commentFile.size)}</p>
->>>>>>> Stashed changes
                         </div>
                         <Button
                           type="button"
@@ -671,13 +436,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                                 pilih file
                               </label>
                             </p>
-<<<<<<< Updated upstream
-                            <p className="text-xs text-gray-500 mt-1">
-                              PDF, Word, atau gambar (Max 5MB)
-                            </p>
-=======
                             <p className="text-xs text-gray-500 mt-1">PDF, Word, atau gambar (Max 5MB)</p>
->>>>>>> Stashed changes
                           </div>
                         </div>
                         <Input
@@ -693,14 +452,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2 text-sm text-gray-500">
-<<<<<<< Updated upstream
-                      <span>
-                        💡 Tip: Bagikan pengalaman konkret untuk diskusi yang
-                        lebih bermakna
-                      </span>
-=======
                       <span>💡 Tip: Bagikan pengalaman konkret untuk diskusi yang lebih bermakna</span>
->>>>>>> Stashed changes
                     </div>
                     <Button
                       onClick={handleAddComment}
@@ -720,38 +472,18 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
             {/* Enhanced Comments List */}
             <div className="space-y-6">
               {comments.map((comment) => {
-<<<<<<< Updated upstream
-                const commentVoteState = voteStates[
-                  `comment-${comment.id}`
-                ] || {
-                  userVote: null,
-                  totalVotes: comment.votes,
-                };
-=======
                 const commentVoteState = voteStates[`comment-${comment.id}`] || {
                   userVote: null,
                   totalVotes: comment.votes,
                 }
->>>>>>> Stashed changes
 
                 return (
                   <div key={comment.id} className="space-y-4">
                     {/* Main Comment */}
                     <div className="flex items-start space-x-4">
                       <Avatar className="w-10 h-10">
-<<<<<<< Updated upstream
-                        <AvatarImage
-                          src={comment.author.avatar || "/placeholder.svg"}
-                        />
-                        <AvatarFallback
-                          className={
-                            comment.isAI ? "bg-purple-500" : "bg-blue-500"
-                          }
-                        >
-=======
                         <AvatarImage src={comment.author.avatar || "/placeholder.svg"} />
                         <AvatarFallback className={comment.isAI ? "bg-purple-500" : "bg-blue-500"}>
->>>>>>> Stashed changes
                           {comment.isAI ? (
                             <Bot className="w-5 h-5 text-white" />
                           ) : (
@@ -771,13 +503,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                           }`}
                         >
                           <div className="flex items-center space-x-2 mb-3">
-<<<<<<< Updated upstream
-                            <span className="font-semibold text-gray-800">
-                              {comment.author.name}
-                            </span>
-=======
                             <span className="font-semibold text-gray-800">{comment.author.name}</span>
->>>>>>> Stashed changes
                             {comment.isAI ? (
                               <Badge
                                 variant="secondary"
@@ -787,26 +513,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                                 AI Assistant
                               </Badge>
                             ) : (
-<<<<<<< Updated upstream
-                              <Badge
-                                variant="secondary"
-                                className="text-xs bg-blue-100 text-blue-700"
-                              >
-                                {comment.author.role === "guru"
-                                  ? "Guru"
-                                  : "Relawan"}
-                              </Badge>
-                            )}
-                            <span className="text-xs text-gray-500">
-                              {new Date(comment.createdAt).toLocaleDateString(
-                                "id-ID"
-                              )}
-                            </span>
-                          </div>
-                          <p className="text-gray-700 leading-relaxed">
-                            {comment.content}
-                          </p>
-=======
                               <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
                                 {comment.author.role === "guru" ? "Guru" : "Relawan"}
                               </Badge>
@@ -816,7 +522,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                             </span>
                           </div>
                           <p className="text-gray-700 leading-relaxed">{comment.content}</p>
->>>>>>> Stashed changes
 
                           {/* Comment File Attachment */}
                           {comment.hasFile && comment.fileName && (
@@ -826,25 +531,10 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                                   <FileText className="w-4 h-4 text-white" />
                                 </div>
                                 <div className="flex-1">
-<<<<<<< Updated upstream
-                                  <p className="text-sm font-medium text-gray-800">
-                                    {comment.fileName}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    Lampiran komentar
-                                  </p>
-                                </div>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-xs"
-                                >
-=======
                                   <p className="text-sm font-medium text-gray-800">{comment.fileName}</p>
                                   <p className="text-xs text-gray-500">Lampiran komentar</p>
                                 </div>
                                 <Button size="sm" variant="outline" className="text-xs">
->>>>>>> Stashed changes
                                   <Download className="w-3 h-3 mr-1" />
                                   Download
                                 </Button>
@@ -860,13 +550,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                             <Button
                               variant="ghost"
                               size="sm"
-<<<<<<< Updated upstream
-                              onClick={() =>
-                                handleVote(`comment-${comment.id}`, "up")
-                              }
-=======
                               onClick={() => handleVote(`comment-${comment.id}`, "up")}
->>>>>>> Stashed changes
                               className={`rounded-full transition-all duration-200 ${
                                 commentVoteState.userVote === "up"
                                   ? "bg-green-100 text-green-600 hover:bg-green-200"
@@ -880,13 +564,8 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                                 commentVoteState.totalVotes > 0
                                   ? "text-green-600"
                                   : commentVoteState.totalVotes < 0
-<<<<<<< Updated upstream
-                                  ? "text-red-600"
-                                  : "text-gray-600"
-=======
                                     ? "text-red-600"
                                     : "text-gray-600"
->>>>>>> Stashed changes
                               }`}
                             >
                               {commentVoteState.totalVotes}
@@ -894,13 +573,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                             <Button
                               variant="ghost"
                               size="sm"
-<<<<<<< Updated upstream
-                              onClick={() =>
-                                handleVote(`comment-${comment.id}`, "down")
-                              }
-=======
                               onClick={() => handleVote(`comment-${comment.id}`, "down")}
->>>>>>> Stashed changes
                               className={`rounded-full transition-all duration-200 ${
                                 commentVoteState.userVote === "down"
                                   ? "bg-red-100 text-red-600 hover:bg-red-200"
@@ -912,15 +585,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                           </div>
 
                           {!comment.isAI && (
-<<<<<<< Updated upstream
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-xs text-gray-500 hover:text-blue-600"
-                            >
-=======
                             <Button variant="ghost" size="sm" className="text-xs text-gray-500 hover:text-blue-600">
->>>>>>> Stashed changes
                               <Reply className="w-3 h-3 mr-1" />
                               Balas
                             </Button>
@@ -933,26 +598,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                     {comment.replies && comment.replies.length > 0 && (
                       <div className="ml-14 space-y-4">
                         {comment.replies.map((reply) => {
-<<<<<<< Updated upstream
-                          const replyVoteState = voteStates[
-                            `comment-${reply.id}`
-                          ] || {
-                            userVote: null,
-                            totalVotes: reply.votes,
-                          };
-
-                          return (
-                            <div
-                              key={reply.id}
-                              className="flex items-start space-x-3"
-                            >
-                              <Avatar className="w-8 h-8">
-                                <AvatarImage
-                                  src={
-                                    reply.author.avatar || "/placeholder.svg"
-                                  }
-                                />
-=======
                           const replyVoteState = voteStates[`comment-${reply.id}`] || {
                             userVote: null,
                             totalVotes: reply.votes,
@@ -962,7 +607,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                             <div key={reply.id} className="flex items-start space-x-3">
                               <Avatar className="w-8 h-8">
                                 <AvatarImage src={reply.author.avatar || "/placeholder.svg"} />
->>>>>>> Stashed changes
                                 <AvatarFallback className="text-xs bg-blue-500 text-white">
                                   {reply.author.name
                                     .split(" ")
@@ -973,28 +617,6 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                               <div className="flex-1">
                                 <div className="bg-white border border-gray-200 rounded-lg p-3">
                                   <div className="flex items-center space-x-2 mb-2">
-<<<<<<< Updated upstream
-                                    <span className="font-medium text-gray-800 text-sm">
-                                      {reply.author.name}
-                                    </span>
-                                    <Badge
-                                      variant="secondary"
-                                      className="text-xs bg-blue-100 text-blue-700"
-                                    >
-                                      {reply.author.role === "guru"
-                                        ? "Guru"
-                                        : "Relawan"}
-                                    </Badge>
-                                    <span className="text-xs text-gray-500">
-                                      {new Date(
-                                        reply.createdAt
-                                      ).toLocaleDateString("id-ID")}
-                                    </span>
-                                  </div>
-                                  <p className="text-gray-700 text-sm">
-                                    {reply.content}
-                                  </p>
-=======
                                     <span className="font-medium text-gray-800 text-sm">{reply.author.name}</span>
                                     <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
                                       {reply.author.role === "guru" ? "Guru" : "Relawan"}
@@ -1004,20 +626,13 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                                     </span>
                                   </div>
                                   <p className="text-gray-700 text-sm">{reply.content}</p>
->>>>>>> Stashed changes
                                 </div>
                                 <div className="flex items-center space-x-2 mt-2">
                                   <div className="flex items-center bg-white border border-gray-200 rounded-full p-1 shadow-sm">
                                     <Button
                                       variant="ghost"
                                       size="sm"
-<<<<<<< Updated upstream
-                                      onClick={() =>
-                                        handleVote(`comment-${reply.id}`, "up")
-                                      }
-=======
                                       onClick={() => handleVote(`comment-${reply.id}`, "up")}
->>>>>>> Stashed changes
                                       className={`rounded-full transition-all duration-200 ${
                                         replyVoteState.userVote === "up"
                                           ? "bg-green-100 text-green-600 hover:bg-green-200"
@@ -1031,13 +646,8 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                                         replyVoteState.totalVotes > 0
                                           ? "text-green-600"
                                           : replyVoteState.totalVotes < 0
-<<<<<<< Updated upstream
-                                          ? "text-red-600"
-                                          : "text-gray-600"
-=======
                                             ? "text-red-600"
                                             : "text-gray-600"
->>>>>>> Stashed changes
                                       }`}
                                     >
                                       {replyVoteState.totalVotes}
@@ -1045,16 +655,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-<<<<<<< Updated upstream
-                                      onClick={() =>
-                                        handleVote(
-                                          `comment-${reply.id}`,
-                                          "down"
-                                        )
-                                      }
-=======
                                       onClick={() => handleVote(`comment-${reply.id}`, "down")}
->>>>>>> Stashed changes
                                       className={`rounded-full transition-all duration-200 ${
                                         replyVoteState.userVote === "down"
                                           ? "bg-red-100 text-red-600 hover:bg-red-200"
@@ -1067,38 +668,16 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                                 </div>
                               </div>
                             </div>
-<<<<<<< Updated upstream
-                          );
-=======
                           )
->>>>>>> Stashed changes
                         })}
                       </div>
                     )}
                   </div>
-<<<<<<< Updated upstream
-                );
-              })}
-            </div>
-
-            {comments.length === 0 && (
-              <div className="text-center py-12">
-                <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                  Belum ada komentar
-                </h3>
-                <p className="text-gray-500">
-                  Jadilah yang pertama untuk memulai diskusi!
-                </p>
-              </div>
-            )}
-=======
                 )
               })}
             </div>
 
             
->>>>>>> Stashed changes
           </CardContent>
         </Card>
       </div>
