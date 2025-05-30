@@ -11,10 +11,14 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/use-auth"
 import Navbar from "@/components/navbar"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { signIn, loading } = useAuth()
+  const { toast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
@@ -28,16 +32,55 @@ export default function LoginPage() {
     setIsLoading(true)
     setError("")
 
-    // Mock login logic
-    setTimeout(() => {
-      if (formData.email && formData.password) {
-        // Simulate successful login
-        router.push("/dashboard")
-      } else {
+    try {
+      console.log("Attempting to sign in with:", formData.email)
+
+      // Validate form data
+      if (!formData.email || !formData.password) {
         setError("Email dan password harus diisi")
+        setIsLoading(false)
+        return
       }
+
+      // Use the signIn function from useAuth hook
+      await signIn(formData.email, formData.password)
+
+      console.log("Sign in successful")
+
+      // Show success message
+      toast({
+        title: "Login Berhasil",
+        description: "Selamat datang di GuruBantu!",
+      })
+
+      // Redirect to dashboard
+      router.push("/dashboard")
+    } catch (error: any) {
+      console.error("Login error:", error)
+
+      let errorMessage = "Terjadi kesalahan saat login"
+
+      // Handle specific Supabase auth errors
+      if (error.message?.includes("Invalid login credentials")) {
+        errorMessage = "Email atau password salah"
+      } else if (error.message?.includes("Email not confirmed")) {
+        errorMessage = "Silakan konfirmasi email Anda terlebih dahulu"
+      } else if (error.message?.includes("Too many requests")) {
+        errorMessage = "Terlalu banyak percobaan login. Coba lagi nanti"
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+
+      setError(errorMessage)
+
+      toast({
+        title: "Login Gagal",
+        description: errorMessage,
+        variant: "destructive",
+      })
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
@@ -67,6 +110,8 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="border-gray-200 focus:border-blue-500"
+                  disabled={isLoading || loading}
+                  required
                 />
               </div>
 
@@ -80,6 +125,8 @@ export default function LoginPage() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="border-gray-200 focus:border-blue-500 pr-10"
+                    disabled={isLoading || loading}
+                    required
                   />
                   <Button
                     type="button"
@@ -87,6 +134,7 @@ export default function LoginPage() {
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3"
                     onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading || loading}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
@@ -102,9 +150,9 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800"
-                disabled={isLoading}
+                disabled={isLoading || loading}
               >
-                {isLoading ? "Memproses..." : "Masuk"}
+                {isLoading || loading ? "Memproses..." : "Masuk"}
               </Button>
 
               <div className="text-center text-sm text-gray-600">

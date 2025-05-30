@@ -15,13 +15,13 @@ import { Upload, X, FileText, ImageIcon, File, Loader2 } from "lucide-react"
 import AuthenticatedLayout from "@/components/authenticated-layout"
 import { usePosts } from "@/hooks/use-posts"
 import { useAuth } from "@/hooks/use-auth"
-import { uploadFile, getPublicUrl, STORAGE_BUCKETS } from "@/lib/supabase"
+import { uploadFile, getPublicUrl, STORAGE_BUCKETS, supabase } from "@/lib/supabase"
 import { toast } from "@/hooks/use-toast"
 
 export default function CreateThreadPage() {
   const router = useRouter()
   const { user } = useAuth()
-  const { createPost } = usePosts()
+  const { createPost, loading: postsLoading } = usePosts()
 
   const [formData, setFormData] = useState({
     title: "",
@@ -36,7 +36,12 @@ export default function CreateThreadPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    console.log("=== FORM SUBMISSION STARTED ===")
+    console.log("User:", user)
+    console.log("Form Data:", formData)
+
     if (!user) {
+      console.error("No user found")
       toast({
         title: "Error",
         description: "Anda harus login untuk membuat thread",
@@ -46,6 +51,7 @@ export default function CreateThreadPage() {
     }
 
     if (!formData.title.trim() || !formData.content.trim()) {
+      console.error("Title or content is empty")
       toast({
         title: "Error",
         description: "Judul dan konten harus diisi",
@@ -62,36 +68,108 @@ export default function CreateThreadPage() {
 
       // Upload file if exists
       if (formData.file) {
-        const filePath = `${user.id}/${Date.now()}-${formData.file.name}`
-        await uploadFile(STORAGE_BUCKETS.FORUM_ATTACHMENTS, filePath, formData.file)
-        attachmentUrl = getPublicUrl(STORAGE_BUCKETS.FORUM_ATTACHMENTS, filePath)
-        attachmentName = formData.file.name
+        console.log("Uploading file:", formData.file.name)
+        try {
+          const filePath = `${user.id}/${Date.now()}-${formData.file.name}`
+          const uploadResult = await uploadFile(STORAGE_BUCKETS.FORUM_ATTACHMENTS, filePath, formData.file)
+          console.log("File upload result:", uploadResult)
+
+          attachmentUrl = getPublicUrl(STORAGE_BUCKETS.FORUM_ATTACHMENTS, filePath)
+          attachmentName = formData.file.name
+          console.log("File uploaded successfully:", { attachmentUrl, attachmentName })
+        } catch (uploadError) {
+          console.error("File upload error:", uploadError)
+          toast({
+            title: "Error",
+            description: "Gagal mengupload file",
+            variant: "destructive",
+          })
+          setIsLoading(false)
+          return
+        }
       }
 
-      // Create the post
+      // Get category_id based on subject
+      const getCategoryId = (subject: string) => {
+        const categoryMap: Record<string, number> = {
+          matematika: 1,
+          "bahasa-indonesia": 2,
+          ipa: 3,
+          ips: 4,
+          "bahasa-inggris": 5,
+          seni: 6,
+          olahraga: 7,
+          umum: 8,
+        }
+        return categoryMap[subject] || null
+      }
+
+      // Create slug from title
+      const slug = formData.title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "") // Remove special characters except spaces and hyphens
+        .replace(/\s+/g, "-") // Replace spaces with hyphens
+        .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+        .replace(/(^-|-$)/g, "") // Remove leading/trailing hyphens
+
+      // Prepare post data according to database schema
       const postData = {
         title: formData.title.trim(),
         content: formData.content.trim(),
         author_id: user.id,
         status: "published" as const,
-        attachment_url: attachmentUrl || undefined,
-        attachment_name: attachmentName || undefined,
-        slug: formData.title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, ""),
+        slug: slug,
+        category_id: formData.subject ? getCategoryId(formData.subject) : null,
+        attachment_url: attachmentUrl || null,
+        attachment_name: attachmentName || null,
+        is_pinned: false,
+        is_solved: false,
+        has_ai_responded: false,
+        view_count: 0,
+        like_count: 0,
+        reply_count: 0,
       }
 
-      const newPost = await createPost(postData)
+      console.log("Post data to be inserted:", postData)
+
+      // Try direct Supabase insert first for debugging
+      console.log("Attempting direct Supabase insert...")
+      const { data: directInsertData, error: directInsertError } = await supabase
+        .from("posts")
+        .insert([postData])
+        .select()
+        .single()
+
+      if (directInsertError) {
+        console.error("Direct Supabase insert error:", directInsertError)
+        throw directInsertError
+      }
+
+      console.log("Direct insert successful:", directInsertData)
+
+      // If direct insert works, the issue might be with the hook
+      // Let's also try the hook method
+      try {
+        console.log("Attempting hook-based insert...")
+        const hookResult = await createPost(postData)
+        console.log("Hook insert successful:", hookResult)
+      } catch (hookError) {
+        console.error("Hook insert error:", hookError)
+        // Continue with direct insert result if hook fails
+      }
 
       toast({
         title: "Berhasil!",
         description: "Thread berhasil dibuat",
       })
 
-      router.push(`/forum/thread/${newPost.id}`)
+      // Use the direct insert result for navigation
+      router.push(`/forum/thread/${directInsertData.id}`)
     } catch (error) {
-      console.error("Error creating post:", error)
+      console.error("=== FORM SUBMISSION ERROR ===")
+      console.error("Error details:", error)
+      console.error("Error message:", error instanceof Error ? error.message : "Unknown error")
+
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Gagal membuat thread",
@@ -99,6 +177,7 @@ export default function CreateThreadPage() {
       })
     } finally {
       setIsLoading(false)
+      console.log("=== FORM SUBMISSION ENDED ===")
     }
   }
 
@@ -114,6 +193,7 @@ export default function CreateThreadPage() {
         })
         return
       }
+      console.log("File selected:", file.name, file.size)
       setFormData({ ...formData, file })
     }
   }
@@ -134,6 +214,11 @@ export default function CreateThreadPage() {
     if (file.type.includes("pdf")) return FileText
     return File
   }
+
+  // Debug: Check if user is loaded
+  console.log("Current user state:", user)
+  console.log("Posts loading state:", postsLoading)
+  console.log("Form loading state:", isLoading)
 
   return (
     <AuthenticatedLayout>

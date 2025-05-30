@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import type React from "react"
 import { useState } from "react"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -26,138 +26,297 @@ import {
   Paperclip,
   Sparkles,
   Clock,
+  Loader2,
 } from "lucide-react"
 import AuthenticatedLayout from "@/components/authenticated-layout"
-import { mockThreads, currentUser, generateAIResponse, type Comment } from "@/lib/mock-data"
+import { usePost } from "@/hooks/use-posts"
+import { useComments } from "@/hooks/use-comments"
+import { useVotes } from "@/hooks/use-votes"
+import { useAuth } from "@/hooks/use-auth"
+import { uploadFile, getPublicUrl, STORAGE_BUCKETS, supabase } from "@/lib/supabase"
+import { toast } from "@/hooks/use-toast"
 
 interface ThreadDetailPageProps {
   params: { id: string }
 }
 
-interface VoteState {
-  [key: string]: {
-    userVote: "up" | "down" | null
-    totalVotes: number
-  }
-}
-
 export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
-  const [id, setId] = useState<string>("")
-  const [comments, setComments] = useState<Comment[]>([])
+  const { id } = params
+  const { user } = useAuth()
+  const { post, loading: postLoading, error: postError, refetch } = usePost(id)
+  const { createComment, loading: commentLoading } = useComments(id)
+  const { vote, loading: voteLoading } = useVotes()
+
   const [newComment, setNewComment] = useState("")
   const [commentFile, setCommentFile] = useState<File | null>(null)
   const [isAIGenerating, setIsAIGenerating] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
-  const [voteStates, setVoteStates] = useState<VoteState>({})
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false)
 
-  // Initialize params and thread data
-  React.useEffect(() => {
-    const threadId = params.id
-    setId(threadId)
-    const thread = mockThreads.find((t) => t.id === threadId)
-    if (thread) {
-      setComments(thread.comments)
-      // Initialize vote states
-      const initialVotes: VoteState = {
-        [`thread-${threadId}`]: {
-          userVote: null,
-          totalVotes: thread.votes,
-        },
-      }
-      thread.comments.forEach((comment) => {
-        initialVotes[`comment-${comment.id}`] = {
-          userVote: null,
-          totalVotes: comment.votes,
-        }
-      })
-      setVoteStates(initialVotes)
-    }
-  }, [params.id])
+  if (postLoading) {
+    return (
+      <AuthenticatedLayout>
+        <div className="p-8 max-w-4xl mx-auto">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <span className="ml-2 text-gray-600">Memuat thread...</span>
+          </div>
+        </div>
+      </AuthenticatedLayout>
+    )
+  }
 
-  const thread = mockThreads.find((t) => t.id === id)
-
-  if (!thread) {
+  if (postError || !post) {
     notFound()
   }
 
-  const handleVote = (itemId: string, voteType: "up" | "down") => {
-    setVoteStates((prev) => {
-      const current = prev[itemId] || { userVote: null, totalVotes: 0 }
-      let newVote: "up" | "down" | null = voteType
-      let voteDelta = 0
-
-      if (current.userVote === voteType) {
-        // Remove vote if clicking same button
-        newVote = null
-        voteDelta = voteType === "up" ? -1 : 1
-      } else if (current.userVote === null) {
-        // New vote
-        voteDelta = voteType === "up" ? 1 : -1
-      } else {
-        // Change vote
-        voteDelta = voteType === "up" ? 2 : -2
-      }
-
-      return {
-        ...prev,
-        [itemId]: {
-          userVote: newVote,
-          totalVotes: current.totalVotes + voteDelta,
-        },
-      }
-    })
-  }
-
-  const handleAddComment = () => {
-    if (!newComment.trim()) return
-
-    const commentId = `comment-${Date.now()}`
-    const comment: Comment = {
-      id: commentId,
-      content: newComment,
-      author: currentUser,
-      createdAt: new Date().toISOString(),
-      votes: 0,
-      hasFile: !!commentFile,
-      fileName: commentFile?.name,
+  const handleVote = async (itemType: "post" | "comment", itemId: string, voteValue: number) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Anda harus login untuk memberikan vote",
+        variant: "destructive",
+      })
+      return
     }
 
-    setComments((prev) => [...prev, comment])
-    setVoteStates((prev) => ({
-      ...prev,
-      [`comment-${commentId}`]: {
-        userVote: null,
-        totalVotes: 0,
-      },
-    }))
-    setNewComment("")
-    setCommentFile(null)
+    try {
+      console.log("Voting:", { itemType, itemId, voteValue, userId: user.id })
+
+      await vote({
+        user_id: user.id,
+        [itemType === "post" ? "post_id" : "comment_id"]: itemId,
+        value: voteValue,
+      })
+
+      await refetch() // Refresh post data
+
+      toast({
+        title: "Berhasil!",
+        description: "Vote berhasil diberikan",
+      })
+    } catch (error) {
+      console.error("Vote error:", error)
+      toast({
+        title: "Error",
+        description: "Gagal memberikan vote",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleAddComment = async () => {
+    console.log("=== COMMENT SUBMISSION STARTED ===")
+    console.log("User:", user)
+    console.log("Comment content:", newComment)
+    console.log("Comment file:", commentFile)
+
+    if (!user) {
+      console.error("No user found")
+      toast({
+        title: "Error",
+        description: "Anda harus login untuk menambahkan komentar",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!newComment.trim()) {
+      console.error("Comment content is empty")
+      toast({
+        title: "Error",
+        description: "Komentar tidak boleh kosong",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmittingComment(true)
+
+    try {
+      let attachmentUrl = ""
+      let attachmentName = ""
+
+      // Upload file if exists
+      if (commentFile) {
+        console.log("Uploading comment file:", commentFile.name)
+        try {
+          const filePath = `${user.id}/${Date.now()}-${commentFile.name}`
+          const uploadResult = await uploadFile(STORAGE_BUCKETS.FORUM_ATTACHMENTS, filePath, commentFile)
+          console.log("Comment file upload result:", uploadResult)
+
+          attachmentUrl = getPublicUrl(STORAGE_BUCKETS.FORUM_ATTACHMENTS, filePath)
+          attachmentName = commentFile.name
+          console.log("Comment file uploaded successfully:", { attachmentUrl, attachmentName })
+        } catch (uploadError) {
+          console.error("Comment file upload error:", uploadError)
+          toast({
+            title: "Error",
+            description: "Gagal mengupload file",
+            variant: "destructive",
+          })
+          setIsSubmittingComment(false)
+          return
+        }
+      }
+
+      // Prepare comment data according to database schema
+      const commentData = {
+        content: newComment.trim(),
+        post_id: id,
+        author_id: user.id,
+        attachment_url: attachmentUrl || null,
+        attachment_name: attachmentName || null,
+        parent_comment_id: null,
+        is_solution: false,
+        is_ai_generated: false,
+        like_count: 0,
+      }
+
+      console.log("Comment data to be inserted:", commentData)
+
+      // Try direct Supabase insert first for debugging
+      console.log("Attempting direct Supabase comment insert...")
+      const { data: directInsertData, error: directInsertError } = await supabase
+        .from("comments")
+        .insert([commentData])
+        .select(`
+          *,
+          author:users(*)
+        `)
+        .single()
+
+      if (directInsertError) {
+        console.error("Direct Supabase comment insert error:", directInsertError)
+        throw directInsertError
+      }
+
+      console.log("Direct comment insert successful:", directInsertData)
+
+      // Try hook method as well
+      try {
+        console.log("Attempting hook-based comment insert...")
+        const hookResult = await createComment(commentData)
+        console.log("Hook comment insert successful:", hookResult)
+      } catch (hookError) {
+        console.error("Hook comment insert error:", hookError)
+        // Continue with direct insert result if hook fails
+      }
+
+      // Update post reply count
+      try {
+        const { error: updateError } = await supabase
+          .from("posts")
+          .update({ reply_count: supabase.sql`reply_count + 1` })
+          .eq("id", id)
+
+        if (updateError) {
+          console.error("Error updating post reply count:", updateError)
+        }
+      } catch (updateError) {
+        console.error("Error updating post reply count:", updateError)
+      }
+
+      setNewComment("")
+      setCommentFile(null)
+      await refetch() // Refresh post data
+
+      toast({
+        title: "Berhasil!",
+        description: "Komentar berhasil ditambahkan",
+      })
+    } catch (error) {
+      console.error("=== COMMENT SUBMISSION ERROR ===")
+      console.error("Error details:", error)
+      console.error("Error message:", error instanceof Error ? error.message : "Unknown error")
+
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Gagal menambahkan komentar",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmittingComment(false)
+      console.log("=== COMMENT SUBMISSION ENDED ===")
+    }
   }
 
   const handleAIAssist = async () => {
     setIsAIGenerating(true)
 
-    // Simulate AI processing time
-    setTimeout(() => {
-      const aiCommentId = `ai-comment-${Date.now()}`
-      const aiComment = generateAIResponse(thread.title, thread.content)
-      aiComment.id = aiCommentId
+    // Simulate AI processing - in real implementation, this would call an AI service
+    setTimeout(async () => {
+      try {
+        const aiResponse = `Berdasarkan pertanyaan "${post.title}", saya dapat membantu dengan beberapa poin:
 
-      setComments((prev) => [...prev, aiComment])
-      setVoteStates((prev) => ({
-        ...prev,
-        [`comment-${aiCommentId}`]: {
-          userVote: null,
-          totalVotes: 0,
-        },
-      }))
-      setIsAIGenerating(false)
+1. Pastikan Anda memahami konsep dasar terlebih dahulu
+2. Coba latihan soal yang serupa untuk memperkuat pemahaman
+3. Jangan ragu untuk bertanya jika ada bagian yang masih belum jelas
+
+Apakah ada aspek spesifik yang ingin Anda dalami lebih lanjut?`
+
+        const aiCommentData = {
+          content: aiResponse,
+          post_id: id,
+          author_id: user?.id || "ai-assistant",
+          is_ai_generated: true,
+          is_solution: false,
+          like_count: 0,
+          attachment_url: null,
+          attachment_name: null,
+          parent_comment_id: null,
+        }
+
+        console.log("Creating AI comment:", aiCommentData)
+
+        const { data: aiComment, error: aiError } = await supabase
+          .from("comments")
+          .insert([aiCommentData])
+          .select(`
+            *,
+            author:users(*)
+          `)
+          .single()
+
+        if (aiError) {
+          console.error("AI comment error:", aiError)
+          throw aiError
+        }
+
+        console.log("AI comment created:", aiComment)
+
+        await refetch()
+
+        toast({
+          title: "AI Assistant",
+          description: "AI telah memberikan respons untuk thread ini",
+        })
+      } catch (error) {
+        console.error("AI assist error:", error)
+        toast({
+          title: "Error",
+          description: "Gagal mendapatkan respons AI",
+          variant: "destructive",
+        })
+      } finally {
+        setIsAIGenerating(false)
+      }
     }, 2000)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "Ukuran file maksimal 5MB",
+          variant: "destructive",
+        })
+        return
+      }
+      console.log("Comment file selected:", file.name, file.size)
       setCommentFile(file)
     }
   }
@@ -195,7 +354,13 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
 
-  const threadVoteState = voteStates[`thread-${id}`] || { userVote: null, totalVotes: thread.votes }
+  const userVote = post.user_vote?.value || 0
+
+  // Debug logging
+  console.log("Current post:", post)
+  console.log("Current user:", user)
+  console.log("Comment loading state:", commentLoading)
+  console.log("Is submitting comment:", isSubmittingComment)
 
   return (
     <AuthenticatedLayout>
@@ -205,37 +370,42 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
           <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
             <div className="flex items-start space-x-4">
               <Avatar className="w-14 h-14 ring-2 ring-white shadow-md">
-                <AvatarImage src={thread.author.avatar || "/placeholder.svg"} />
+                <AvatarImage src={post.author?.avatar_url || "/placeholder.svg"} />
                 <AvatarFallback className="bg-blue-500 text-white font-semibold">
-                  {thread.author.name
-                    .split(" ")
+                  {post.author?.full_name
+                    ?.split(" ")
                     .map((n) => n[0])
-                    .join("")}
+                    .join("") || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center space-x-3 mb-3">
-                  <h1 className="text-2xl font-bold text-gray-800 leading-tight">{thread.title}</h1>
+                  <h1 className="text-2xl font-bold text-gray-800 leading-tight">{post.title}</h1>
                   <Badge variant="secondary" className="bg-blue-100 text-blue-700 font-medium">
-                    {thread.author.role === "guru" ? "Guru" : "Relawan"}
+                    {post.author?.role === "guru" ? "Guru" : "Relawan"}
                   </Badge>
+                  {post.is_solved && (
+                    <Badge variant="secondary" className="bg-green-100 text-green-700 font-medium">
+                      Terjawab
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
-                  <span className="font-medium">{thread.author.name}</span>
+                  <span className="font-medium">{post.author?.full_name}</span>
                   <span className="flex items-center space-x-1">
-                    <span>{thread.author.subject}</span>
+                    <span>{post.author?.subject}</span>
                     <span>•</span>
-                    <span>{thread.author.level}</span>
+                    <span>{post.author?.education_level}</span>
                   </span>
                   <span className="flex items-center space-x-1">
                     <Clock className="w-4 h-4" />
-                    <span>{new Date(thread.createdAt).toLocaleDateString("id-ID")}</span>
+                    <span>{new Date(post.created_at).toLocaleDateString("id-ID")}</span>
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {thread.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs bg-white border-blue-200 text-blue-600">
-                      {tag}
+                  {post.tags?.map((tag) => (
+                    <Badge key={tag.id} variant="outline" className="text-xs bg-white border-blue-200 text-blue-600">
+                      {tag.name}
                     </Badge>
                   ))}
                 </div>
@@ -244,21 +414,25 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
           </CardHeader>
           <CardContent className="p-6">
             <div className="prose max-w-none mb-6">
-              <p className="text-gray-700 leading-relaxed text-lg">{thread.content}</p>
+              <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">{post.content}</p>
             </div>
 
             {/* File Attachment */}
-            {thread.hasFile && (
+            {post.attachment_url && (
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-6">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-md">
                     <FileText className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-800">{thread.fileName}</p>
-                    <p className="text-sm text-gray-600">PDF • 2.5 MB</p>
+                    <p className="font-semibold text-gray-800">{post.attachment_name}</p>
+                    <p className="text-sm text-gray-600">Lampiran thread</p>
                   </div>
-                  <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white shadow-md">
+                  <Button
+                    size="sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white shadow-md"
+                    onClick={() => window.open(post.attachment_url, "_blank")}
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     Download
                   </Button>
@@ -266,7 +440,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
               </div>
             )}
 
-            {/* Enhanced Action Buttons */}
+            {/* Action Buttons */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 {/* Upvote/Downvote for Thread */}
@@ -274,34 +448,28 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleVote(`thread-${id}`, "up")}
+                    onClick={() => handleVote("post", post.id, userVote === 1 ? 0 : 1)}
+                    disabled={voteLoading}
                     className={`rounded-full transition-all duration-200 ${
-                      threadVoteState.userVote === "up"
-                        ? "bg-green-100 text-green-600 hover:bg-green-200"
-                        : "hover:bg-gray-100"
+                      userVote === 1 ? "bg-green-100 text-green-600 hover:bg-green-200" : "hover:bg-gray-100"
                     }`}
                   >
                     <ChevronUp className="w-4 h-4" />
                   </Button>
                   <span
                     className={`px-3 py-1 text-sm font-semibold min-w-[2rem] text-center ${
-                      threadVoteState.totalVotes > 0
-                        ? "text-green-600"
-                        : threadVoteState.totalVotes < 0
-                          ? "text-red-600"
-                          : "text-gray-600"
+                      post.like_count > 0 ? "text-green-600" : post.like_count < 0 ? "text-red-600" : "text-gray-600"
                     }`}
                   >
-                    {threadVoteState.totalVotes}
+                    {post.like_count}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleVote(`thread-${id}`, "down")}
+                    onClick={() => handleVote("post", post.id, userVote === -1 ? 0 : -1)}
+                    disabled={voteLoading}
                     className={`rounded-full transition-all duration-200 ${
-                      threadVoteState.userVote === "down"
-                        ? "bg-red-100 text-red-600 hover:bg-red-200"
-                        : "hover:bg-gray-100"
+                      userVote === -1 ? "bg-red-100 text-red-600 hover:bg-red-200" : "hover:bg-gray-100"
                     }`}
                   >
                     <ChevronDown className="w-4 h-4" />
@@ -310,7 +478,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
 
                 <Button variant="outline" size="sm" className="flex items-center space-x-2">
                   <MessageSquare className="w-4 h-4" />
-                  <span>{comments.length} Komentar</span>
+                  <span>{post.reply_count} Komentar</span>
                 </Button>
                 <Button variant="outline" size="sm">
                   <Share2 className="w-4 h-4" />
@@ -324,7 +492,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
               >
                 {isAIGenerating ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     <span>AI sedang berpikir...</span>
                   </>
                 ) : (
@@ -343,20 +511,20 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
           <CardHeader className="bg-gray-50 border-b">
             <h2 className="text-xl font-semibold text-gray-800 flex items-center space-x-2">
               <MessageSquare className="w-5 h-5" />
-              <span>Diskusi ({comments.length})</span>
+              <span>Diskusi ({post.comments?.length || 0})</span>
             </h2>
           </CardHeader>
           <CardContent className="p-6">
-            {/* Enhanced Add Comment */}
+            {/* Add Comment */}
             <div className="mb-8">
               <div className="flex items-start space-x-4">
                 <Avatar className="w-10 h-10">
-                  <AvatarImage src={currentUser.avatar || "/placeholder.svg"} />
+                  <AvatarImage src={user?.avatar_url || "/placeholder.svg"} />
                   <AvatarFallback className="bg-blue-500 text-white">
-                    {currentUser.name
-                      .split(" ")
+                    {user?.full_name
+                      ?.split(" ")
                       .map((n) => n[0])
-                      .join("")}
+                      .join("") || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-4">
@@ -366,10 +534,11 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       className="border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 min-h-[100px] resize-none"
+                      disabled={isSubmittingComment}
                     />
                   </div>
 
-                  {/* Enhanced File Upload */}
+                  {/* File Upload */}
                   <div className="space-y-3">
                     <Label className="text-sm font-medium text-gray-700">Lampiran (opsional)</Label>
                     {commentFile ? (
@@ -390,6 +559,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                           size="sm"
                           onClick={() => setCommentFile(null)}
                           className="text-gray-500 hover:text-red-500 hover:bg-red-50"
+                          disabled={isSubmittingComment}
                         >
                           <X className="w-4 h-4" />
                         </Button>
@@ -428,6 +598,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                           onChange={handleFileChange}
                           className="hidden"
                           id="comment-file-upload"
+                          disabled={isSubmittingComment}
                         />
                       </div>
                     )}
@@ -439,10 +610,14 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                     </div>
                     <Button
                       onClick={handleAddComment}
-                      disabled={!newComment.trim()}
+                      disabled={!newComment.trim() || isSubmittingComment}
                       className="bg-blue-500 hover:bg-blue-600 text-white shadow-md transition-all duration-200 disabled:opacity-50"
                     >
-                      <MessageSquare className="w-4 h-4 mr-2" />
+                      {isSubmittingComment ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                      )}
                       Kirim Komentar
                     </Button>
                   </div>
@@ -452,42 +627,40 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
 
             <Separator className="mb-8" />
 
-            {/* Enhanced Comments List */}
+            {/* Comments List */}
             <div className="space-y-6">
-              {comments.map((comment) => {
-                const commentVoteState = voteStates[`comment-${comment.id}`] || {
-                  userVote: null,
-                  totalVotes: comment.votes,
-                }
+              {post.comments?.map((comment) => {
+                const commentUserVote = comment.user_vote?.value || 0
 
                 return (
                   <div key={comment.id} className="space-y-4">
-                    {/* Main Comment */}
                     <div className="flex items-start space-x-4">
                       <Avatar className="w-10 h-10">
-                        <AvatarImage src={comment.author.avatar || "/placeholder.svg"} />
-                        <AvatarFallback className={comment.isAI ? "bg-purple-500" : "bg-blue-500"}>
-                          {comment.isAI ? (
+                        <AvatarImage src={comment.author?.avatar_url || "/placeholder.svg"} />
+                        <AvatarFallback className={comment.is_ai_generated ? "bg-purple-500" : "bg-blue-500"}>
+                          {comment.is_ai_generated ? (
                             <Bot className="w-5 h-5 text-white" />
                           ) : (
-                            comment.author.name
-                              .split(" ")
+                            comment.author?.full_name
+                              ?.split(" ")
                               .map((n) => n[0])
-                              .join("")
+                              .join("") || "U"
                           )}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div
                           className={`rounded-xl p-4 transition-all duration-200 ${
-                            comment.isAI
+                            comment.is_ai_generated
                               ? "bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200"
                               : "bg-gray-50 hover:bg-gray-100"
                           }`}
                         >
                           <div className="flex items-center space-x-2 mb-3">
-                            <span className="font-semibold text-gray-800">{comment.author.name}</span>
-                            {comment.isAI ? (
+                            <span className="font-semibold text-gray-800">
+                              {comment.is_ai_generated ? "AI Assistant" : comment.author?.full_name}
+                            </span>
+                            {comment.is_ai_generated ? (
                               <Badge
                                 variant="secondary"
                                 className="text-xs bg-purple-100 text-purple-700 border-purple-200"
@@ -497,27 +670,37 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                               </Badge>
                             ) : (
                               <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-                                {comment.author.role === "guru" ? "Guru" : "Relawan"}
+                                {comment.author?.role === "guru" ? "Guru" : "Relawan"}
+                              </Badge>
+                            )}
+                            {comment.is_solution && (
+                              <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                                Solusi
                               </Badge>
                             )}
                             <span className="text-xs text-gray-500">
-                              {new Date(comment.createdAt).toLocaleDateString("id-ID")}
+                              {new Date(comment.created_at).toLocaleDateString("id-ID")}
                             </span>
                           </div>
-                          <p className="text-gray-700 leading-relaxed">{comment.content}</p>
+                          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{comment.content}</p>
 
                           {/* Comment File Attachment */}
-                          {comment.hasFile && comment.fileName && (
+                          {comment.attachment_url && comment.attachment_name && (
                             <div className="mt-4 p-3 bg-white border border-gray-200 rounded-lg">
                               <div className="flex items-center space-x-3">
                                 <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
                                   <FileText className="w-4 h-4 text-white" />
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-sm font-medium text-gray-800">{comment.fileName}</p>
+                                  <p className="text-sm font-medium text-gray-800">{comment.attachment_name}</p>
                                   <p className="text-xs text-gray-500">Lampiran komentar</p>
                                 </div>
-                                <Button size="sm" variant="outline" className="text-xs">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs"
+                                  onClick={() => window.open(comment.attachment_url, "_blank")}
+                                >
                                   <Download className="w-3 h-3 mr-1" />
                                   Download
                                 </Button>
@@ -528,14 +711,14 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
 
                         {/* Comment Actions */}
                         <div className="flex items-center space-x-2 mt-3">
-                          {/* Upvote/Downvote for Comments */}
                           <div className="flex items-center bg-white border border-gray-200 rounded-full p-1 shadow-sm">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleVote(`comment-${comment.id}`, "up")}
+                              onClick={() => handleVote("comment", comment.id, commentUserVote === 1 ? 0 : 1)}
+                              disabled={voteLoading}
                               className={`rounded-full transition-all duration-200 ${
-                                commentVoteState.userVote === "up"
+                                commentUserVote === 1
                                   ? "bg-green-100 text-green-600 hover:bg-green-200"
                                   : "hover:bg-gray-100"
                               }`}
@@ -544,21 +727,22 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                             </Button>
                             <span
                               className={`px-2 text-xs font-semibold min-w-[1.5rem] text-center ${
-                                commentVoteState.totalVotes > 0
+                                comment.like_count > 0
                                   ? "text-green-600"
-                                  : commentVoteState.totalVotes < 0
+                                  : comment.like_count < 0
                                     ? "text-red-600"
                                     : "text-gray-600"
                               }`}
                             >
-                              {commentVoteState.totalVotes}
+                              {comment.like_count}
                             </span>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleVote(`comment-${comment.id}`, "down")}
+                              onClick={() => handleVote("comment", comment.id, commentUserVote === -1 ? 0 : -1)}
+                              disabled={voteLoading}
                               className={`rounded-full transition-all duration-200 ${
-                                commentVoteState.userVote === "down"
+                                commentUserVote === -1
                                   ? "bg-red-100 text-red-600 hover:bg-red-200"
                                   : "hover:bg-gray-100"
                               }`}
@@ -567,7 +751,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                             </Button>
                           </div>
 
-                          {!comment.isAI && (
+                          {!comment.is_ai_generated && (
                             <Button variant="ghost" size="sm" className="text-xs text-gray-500 hover:text-blue-600">
                               <Reply className="w-3 h-3 mr-1" />
                               Balas
@@ -580,79 +764,33 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
                     {/* Replies */}
                     {comment.replies && comment.replies.length > 0 && (
                       <div className="ml-14 space-y-4">
-                        {comment.replies.map((reply) => {
-                          const replyVoteState = voteStates[`comment-${reply.id}`] || {
-                            userVote: null,
-                            totalVotes: reply.votes,
-                          }
-
-                          return (
-                            <div key={reply.id} className="flex items-start space-x-3">
-                              <Avatar className="w-8 h-8">
-                                <AvatarImage src={reply.author.avatar || "/placeholder.svg"} />
-                                <AvatarFallback className="text-xs bg-blue-500 text-white">
-                                  {reply.author.name
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                <div className="bg-white border border-gray-200 rounded-lg p-3">
-                                  <div className="flex items-center space-x-2 mb-2">
-                                    <span className="font-medium text-gray-800 text-sm">{reply.author.name}</span>
-                                    <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-                                      {reply.author.role === "guru" ? "Guru" : "Relawan"}
-                                    </Badge>
-                                    <span className="text-xs text-gray-500">
-                                      {new Date(reply.createdAt).toLocaleDateString("id-ID")}
-                                    </span>
-                                  </div>
-                                  <p className="text-gray-700 text-sm">{reply.content}</p>
+                        {comment.replies.map((reply) => (
+                          <div key={reply.id} className="flex items-start space-x-3">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={reply.author?.avatar_url || "/placeholder.svg"} />
+                              <AvatarFallback className="text-xs bg-blue-500 text-white">
+                                {reply.author?.full_name
+                                  ?.split(" ")
+                                  .map((n) => n[0])
+                                  .join("") || "U"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <div className="bg-white border border-gray-200 rounded-lg p-3">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span className="font-medium text-gray-800 text-sm">{reply.author?.full_name}</span>
+                                  <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
+                                    {reply.author?.role === "guru" ? "Guru" : "Relawan"}
+                                  </Badge>
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(reply.created_at).toLocaleDateString("id-ID")}
+                                  </span>
                                 </div>
-                                <div className="flex items-center space-x-2 mt-2">
-                                  <div className="flex items-center bg-white border border-gray-200 rounded-full p-1 shadow-sm">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleVote(`comment-${reply.id}`, "up")}
-                                      className={`rounded-full transition-all duration-200 ${
-                                        replyVoteState.userVote === "up"
-                                          ? "bg-green-100 text-green-600 hover:bg-green-200"
-                                          : "hover:bg-gray-100"
-                                      }`}
-                                    >
-                                      <ChevronUp className="w-3 h-3" />
-                                    </Button>
-                                    <span
-                                      className={`px-2 text-xs font-semibold min-w-[1.5rem] text-center ${
-                                        replyVoteState.totalVotes > 0
-                                          ? "text-green-600"
-                                          : replyVoteState.totalVotes < 0
-                                            ? "text-red-600"
-                                            : "text-gray-600"
-                                      }`}
-                                    >
-                                      {replyVoteState.totalVotes}
-                                    </span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleVote(`comment-${reply.id}`, "down")}
-                                      className={`rounded-full transition-all duration-200 ${
-                                        replyVoteState.userVote === "down"
-                                          ? "bg-red-100 text-red-600 hover:bg-red-200"
-                                          : "hover:bg-gray-100"
-                                      }`}
-                                    >
-                                      <ChevronDown className="w-3 h-3" />
-                                    </Button>
-                                  </div>
-                                </div>
+                                <p className="text-gray-700 text-sm whitespace-pre-wrap">{reply.content}</p>
                               </div>
                             </div>
-                          )
-                        })}
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -660,7 +798,7 @@ export default function ThreadDetailPage({ params }: ThreadDetailPageProps) {
               })}
             </div>
 
-            {comments.length === 0 && (
+            {(!post.comments || post.comments.length === 0) && (
               <div className="text-center py-12">
                 <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-600 mb-2">Belum ada komentar</h3>
