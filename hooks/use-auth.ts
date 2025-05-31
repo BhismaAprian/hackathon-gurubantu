@@ -81,7 +81,9 @@ export function useAuth() {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
+    
     if (error) throw error
+
   }
 
   // const updateProfile = async (updates: Partial<User>) => {
