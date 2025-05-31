@@ -39,7 +39,7 @@ async function getThreadData(id: string) {
 
     // Fetch comments for this thread
     const { data: comments, error: commentsError } = await supabase
-      .from("comments")
+      .from("comment")
       .select(`
         *,
         author:author_id (
@@ -75,11 +75,34 @@ async function getThreadData(id: string) {
 async function getUserVotes(userId: string, threadId: string) {
   const supabase = await createClient()
 
-  const { data: votes, error } = await supabase
+  // Step 1: Ambil semua comment id di thread ini
+  const { data: commentIdsData, error: commentError } = await supabase
+    .from("comment")
+    .select("id")
+    .eq("post_id", threadId)
+
+  if (commentError) {
+    console.error("Error fetching comment IDs:", commentError)
+    return []
+  }
+
+  const commentIds = commentIdsData?.map((c) => c.id) || []
+
+  // Step 2: Ambil semua vote user untuk thread dan comments tersebut
+  let query = await supabase
     .from("votes")
     .select("*")
     .eq("user_id", userId)
-    .or(`thread_id.eq.${threadId},comment_id.in.(select id from comments where post_id='${threadId}')`)
+
+  // Tambahkan kondisi OR: vote di thread ATAU comment dalam thread
+  if (commentIds.length > 0) {
+    query = query.or(`thread_id.eq.${threadId},comment_id.in.(${commentIds.join(",")})`)
+  } else {
+    // Jika tidak ada comment, hanya cari vote di thread
+    query = query.eq("thread_id", threadId)
+  }
+
+  const { data: votes, error } = await query
 
   if (error) {
     console.error("Error fetching votes:", error)
@@ -90,7 +113,8 @@ async function getUserVotes(userId: string, threadId: string) {
 }
 
 export default async function ThreadDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params
+  // Destructure params after awaiting
+  const { id } = await params
 
   // Get thread data
   const threadData = await getThreadData(id)

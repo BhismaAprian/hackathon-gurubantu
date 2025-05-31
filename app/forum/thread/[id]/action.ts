@@ -34,7 +34,7 @@ export async function createComment(formData: FormData) {
       throw new Error("Failed to upload attachment: " + storageError.message);
     }
 
-    const { data: publicUrlData } = supabase.storage
+    const { data: publicUrlData } = await supabase.storage
       .from("forum-attachments")
       .getPublicUrl(filePath);
 
@@ -228,7 +228,7 @@ export async function markAsSolution(commentId: string) {
   // Mark comment as solution
   const { error } = await supabase
     .from("comment")
-    .update({ is_solution: true })
+    .update({ is_solution: false })
     .eq("id", commentId);
 
   if (error) {
