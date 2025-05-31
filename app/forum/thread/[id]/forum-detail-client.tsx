@@ -2,6 +2,7 @@
 
 import type React from "react"
 
+import { generateAIReplyStream } from '@/lib/generateAIReplyStream'
 import { useState, useRef } from "react"
 import Link from "next/link"
 import { formatDate } from "@/utils/format-date"
@@ -92,20 +93,23 @@ export default function ForumDetailClient({ threadData, currentUser, initialVote
       setIsSubmitting(false)
     }
   }
+ 
 
-  // Handle AI reply generation
   const handleGenerateAI = async () => {
     setIsGeneratingAI(true)
+    setAIReplyContent('') // kosongkan balasan sebelumnya
     try {
-      const aiReply = await generateAIReply(thread.id, thread.content)
-      setAIReplyContent(aiReply)
+      await generateAIReplyStream(thread.id, thread.content, (chunk) => {
+        setAIReplyContent((prev) => prev + chunk)
+      })
       setShowAIReply(true)
-    } catch (error) {
-      console.error("Error generating AI reply:", error)
+    } catch (err) {
+      console.error('Gagal generate AI:', err)
     } finally {
       setIsGeneratingAI(false)
     }
   }
+
 
   // Handle voting
   const handleVote = async (targetId: string, targetType: "thread" | "comment", voteValue: number) => {
