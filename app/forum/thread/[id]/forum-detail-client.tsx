@@ -61,6 +61,8 @@ export default function ForumDetailClient({ threadData, currentUser, initialVote
       .toUpperCase()
   }
 
+  console.log(thread)
+
   // Handle comment submission
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -416,9 +418,10 @@ export default function ForumDetailClient({ threadData, currentUser, initialVote
             <h3 className="font-semibold font-jakarta">AI Generated Response</h3>
           </div>
           <div className="prose max-w-none mb-4 font-geist">
-<blockquote className="border-l-4 border-blue-400 bg-blue-50 p-4 text-gray-800 italic rounded-md whitespace-pre-line">
-  {aiReplyContent}
-</blockquote>          </div>
+            <blockquote className="border-l-4 border-blue-400 bg-blue-50 p-4 text-gray-800 italic rounded-md whitespace-pre-line">
+              {aiReplyContent}
+            </blockquote>          
+          </div>
           <div className="flex gap-2">
             <Button
               size="sm"

@@ -15,27 +15,19 @@ import { useAuth } from "@/hooks/use-auth"
 import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import { redirect } from "next/navigation"
-import Dropzone from "react-dropzone"
-import {v4 as uuidv4} from "uuid";
-
-interface FileWithPreview extends File {
-  preview?: string
-  id: string
-  uploadProgress: number
-  status: "uploading" | "success" | "error" | "processing"
-  processedUrl?: string
-  error?: string
-}
+import FileAttachmentDropzone from "@/components/file-upload-dropzone"
+import { v4 as uuidv4 } from "uuid"
 
 export default function CreateThreadPage() {
   const { session } = useAuth()
-  const [file, setFile] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   const {
     register,
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ThreadForm>({
     resolver: zodResolver(threadFormSchema),
@@ -46,7 +38,7 @@ export default function CreateThreadPage() {
       slug: "",
       author_id: "",
       category_id: "",
-      attachment_url: "",
+      attachment_url: undefined,
       attachment_name: "",
     },
   })
@@ -57,7 +49,13 @@ export default function CreateThreadPage() {
     }
   }, [session, setValue])
 
+  const handleFileChange = (file: File | null) => {
+    setValue("attachment_url", file || undefined)
+  }
 
+  const handleFileNameChange = (name: string | null) => {
+    setValue("attachment_name", name || "")
+  }
 
   async function onSubmit(v: ThreadForm) {
     if (!session?.user.id) {
@@ -65,83 +63,81 @@ export default function CreateThreadPage() {
       return
     }
 
-    const slug = v.title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/(^-|-$)/g, "")
+    try {
+      setIsUploading(true)
 
-    const file = v.attachment_url as FileWithPreview | string
-    if (typeof file === "string") {
-      v.attachment_url = file
-    }
-    
-    if (file instanceof File) {
-      const fileExt = `forum-attachments/${file.name.split(".").pop()}`
-      const filePath = `forum-attachments/${uuidv4()}.${fileExt}`;
+      const slug = v.title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/(^-|-$)/g, "")
 
-      const { error: upload } = await supabase.storage
-        .from("forum-attachments")
-        .upload(filePath, v.attachment_url)
+      let attachmentUrl = ""
 
-        if (upload) {
-          console.error("Error uploading file:", upload)
+      // Handle file upload if present
+      if (v.attachment_url instanceof File) {
+        const file = v.attachment_url
+        const fileExt = file.name.split(".").pop()
+        const filePath = `forum-attachments/${uuidv4()}.${fileExt}`
+
+        const { error: uploadError } = await supabase.storage.from("forum-attachments").upload(filePath, file)
+
+        if (uploadError) {
+          console.error("Error uploading file:", uploadError)
           toast.error("Failed to upload attachment")
+          setIsUploading(false)
           return
         }
 
-        const {data: publicUrlData} = supabase.storage
-          .from("forum-attachments")
-          .getPublicUrl(filePath)
+        const { data: publicUrlData } = supabase.storage.from("forum-attachments").getPublicUrl(filePath)
 
-        v.attachment_url = publicUrlData.publicUrl
-        v.slug = slug
-        v.author_id = session.user.id
-          
-    
-        const { data: thread_data, error } = await supabase
-          .from("threads")
-          .insert({
-            title: v.title,
-            content: v.content,
-            slug: slug,
-            author_id: session.user.id,
-            category_id: v.category_id,
-            attachment_url: v.attachment_url,
-            attachment_name: file
-          })
-          .select()
-          .single()
-    
-        if (error) {
-          console.error("Error creating thread:", error)
-          toast.error("Failed to create thread")
-          return
-        }
-    
-        // Add tags
+        attachmentUrl = publicUrlData.publicUrl
+      }
+
+      // Create thread
+      const { data: thread_data, error } = await supabase
+        .from("threads")
+        .insert({
+          title: v.title,
+          content: v.content,
+          slug: slug,
+          author_id: session.user.id,
+          category_id: v.category_id,
+          attachment_url: attachmentUrl || null,
+          attachment_name: v.attachment_name || null,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error("Error creating thread:", error)
+        toast.error("Failed to create thread")
+        setIsUploading(false)
+        return
+      }
+
+      // Add tags
+      if (v.tags && v.tags.length > 0) {
         const tagPromises = v.tags.map(async (tag) => {
           await supabase.from("thread_tags").upsert({
             thread_id: thread_data.id,
             tag_id: tag,
           })
         })
-    
+
         await Promise.all(tagPromises)
-    
-        toast.success("Thread created successfully!")
-        redirect("/forum")
+      }
+
+      toast.success("Thread created successfully!")
+      setIsUploading(false)
+      redirect("/forum")
+    } catch (error) {
+      console.error("Error in form submission:", error)
+      toast.error("An unexpected error occurred")
+      setIsUploading(false)
     }
-
-
-
   }
-
-  const handleImageChange = (data: File) => {
-    setFile(URL.createObjectURL(data))
-  }
-
 
   return (
     <UserLayout>
@@ -234,74 +230,29 @@ export default function CreateThreadPage() {
               name="tags"
               control={control}
             />
+            {errors.tags?.message && <p className="text-xs font-medium text-red-500">{errors.tags.message}</p>}
           </div>
 
-          {/* Enhanced File Upload */}
+          {/* File Attachment */}
           <div className="space-y-2">
             <Label>Lampiran File (Opsional)</Label>
             <Controller
-              render={({field}) => {
-                console.log("File field:", field.value)
-                return (
-                  <Dropzone
-                    onDrop={(acceptedFiles) => {
-                      const file = acceptedFiles[0] as File
-                      field.onChange(acceptedFiles[0])
-                      handleImageChange(file)
-                    }}
-                  >
-                    {({getRootProps, getInputProps}) => (
-                      <div
-                        {...getRootProps()}
-                        className="relative rounded-md h-[18rem] w-full overflow-auto grid place-content-center cursor-pointer px-4 py-8 border border-dashed group-focus:border-primary-500 mx-auto"
-                      >
-                        {file ? (
-                          <img
-                            className="object-cover rounded-md"
-                            src={file}
-                            alt="attachment preview"
-                          />
-                        ) : (
-                          <div className="space-y-1 text-center">
-                            <input id="book-image" type="file" {...getInputProps()}/>
-                            <svg
-                              className='mx-auto h-12 w-12 text-gray-400'
-                              stroke='currentColor'
-                              fill='none'
-                              viewBox='0 0 48 48'
-                              aria-hidden='true'
-                            >
-                              <path
-                                d='M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02'
-                                strokeWidth={2}
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                              />
-                            </svg>
-                            <p className="text-sm text-gray-500">
-                              Drag and drop cover book here, or click to choose file
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                    )}
-                  </Dropzone>
-                )
-              }}
-              key={file}
+              render={({ field }) => (
+                <FileAttachmentDropzone
+                  value={field.value}
+                  onChange={handleFileChange}
+                  onNameChange={handleFileNameChange}
+                  maxSize={10 * 1024 * 1024} // 10MB
+                />
+              )}
               control={control}
               name="attachment_url"
             />
           </div>
 
           {/* Submit Button */}
-          <Button
-            type="submit"
-            className="font-semibold w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Menyimpan..." : "Buat Thread"}
+          <Button type="submit" className="font-semibold w-full" disabled={isSubmitting || isUploading}>
+            {isSubmitting || isUploading ? "Menyimpan..." : "Buat Thread"}
           </Button>
         </form>
       </div>

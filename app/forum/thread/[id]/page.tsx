@@ -51,6 +51,7 @@ async function getThreadData(id: string) {
       .eq("post_id", id)
       .order("created_at", { ascending: true })
 
+    
     if (commentsError) {
       console.error("Error fetching comments:", commentsError)
     }

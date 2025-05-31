@@ -16,7 +16,7 @@ export default function Sidebar() {
   const { user } = useAuth()
 
   return (
-    <aside className="w-full max-w-[22rem] bg-white h-screen sticky top-0 z-50 border-r border-gray-200 font-jakarta">
+    <aside className="w-full hidden lg:block lg:max-w-[22rem] bg-white h-screen sticky top-0 z-50 border-r border-gray-200 font-jakarta">
       <div className="container px-4 py-10">
         <div className="logo flex items-center justify-center">
           <h1 className="text-heading font-extrabold text-[24px]">GuruBantu</h1>
