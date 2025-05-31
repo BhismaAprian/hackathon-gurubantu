@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function ProfileDashboard() {
-  const {session} = useAuth();
+  const {session, signOut} = useAuth();
 
 
   return (
@@ -35,7 +35,10 @@ export default function ProfileDashboard() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem>Profil</DropdownMenuItem>
-        <DropdownMenuItem>Keluar</DropdownMenuItem>
+        <DropdownMenuItem onClick={async() => {
+          await signOut();
+          window.location.href = "/login";
+        }}>Keluar</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu> 
   )

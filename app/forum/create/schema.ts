@@ -21,16 +21,16 @@ export const threadSchema = z.object({
   like_count: z.number().default(0),
   view_count: z.number().default(0),
   reply_count: z.number().default(0),
-  attechment_url: z.string().optional(),
+  attachment_url: z.union([z.string(), z.instanceof(File)]).optional(),
   attachment_name: z.string().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
-  // author: {
-  //   full_name: z.string(),
-  //   avatar_url: z.string(),
-  //   role: z.enum(['relawan', 'guru']).default('relawan'),
-  //   teaching_experience: z.string().optional(),
-  // }
+  author: z.object({
+    full_name: z.string(),
+    avatar_url: z.string(),
+    role: z.enum(['relawan', 'guru']).default('relawan'),
+    teaching_experience: z.string().optional(),
+  })
 })
 
 export const threadFormSchema = threadSchema.pick({
@@ -40,7 +40,8 @@ export const threadFormSchema = threadSchema.pick({
   slug: true,
   author_id: true,
   category_id: true,
-  attechment_url: true
+  attachment_url: true,
+  attachment_name: true,
 });
 
 export type ThreadForm = z.infer<typeof threadFormSchema>;

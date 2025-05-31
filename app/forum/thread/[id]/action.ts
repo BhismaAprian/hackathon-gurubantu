@@ -58,6 +58,8 @@ export async function createComment(formData: FormData) {
     created_at: new Date().toISOString(),
   });
 
+  
+
   if (insertError) {
     throw new Error("Failed to create comment: " + insertError.message);
   }

@@ -10,24 +10,28 @@ import { formatDate } from "@/utils/format-date";
 export default async function ForumPage() {
 
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data } = await supabase
   .from("threads")
   .select(`
     *,
     author:author_id (
-      full_name
+      id,
+      full_name,
+      avatar_url
+    ),
+    category:category_id (
+      id,
+      name
     ),
     thread_tags (
       tag:tag_id (
+        id,
         name
       )
     )
   `)
   .order("created_at", { ascending: false });
 
-
-
-  console.log("data", data);
   
   return (
     <UserLayout>
@@ -65,7 +69,7 @@ export default async function ForumPage() {
                         </Avatar>
                         <div className="flex flex-col font-jakarta -pace-y-1">
                           <h2 className="text-lg font-semibold text-gray-800">{thread.author.full_name}</h2>
-                          <p className="text-sm font-semibold text-gray-500">Institut Teknologi Kalimantan</p>
+                          <p className="text-sm font-semibold text-gray-500">{thread.author.role}</p>
                         </div>
                       </div>
                       {/* Date */}

@@ -76,6 +76,8 @@ export default function ForumDetailClient({ threadData, currentUser, initialVote
       .toUpperCase()
   }
 
+  console.log(thread)
+
   // Handle comment submission
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
