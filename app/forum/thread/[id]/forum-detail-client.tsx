@@ -1,11 +1,8 @@
 "use client"
 
 import type React from "react"
-<<<<<<< Updated upstream
 
 import { generateAIReplyStream } from '@/lib/generateAIReplyStream'
-=======
->>>>>>> Stashed changes
 import { useState, useRef } from "react"
 import Link from "next/link"
 import { formatDate } from "@/utils/format-date"
@@ -127,12 +124,7 @@ export default function ForumDetailClient({ threadData, currentUser, initialVote
     }
   }
 
-<<<<<<< Updated upstream
-
-  // Handle voting
-=======
   // Improved voting handler with better error handling and optimistic updates
->>>>>>> Stashed changes
   const handleVote = async (targetId: string, targetType: "thread" | "comment", voteValue: number) => {
     // Prevent multiple simultaneous votes on the same target
     if (votingStates[targetId]) return
