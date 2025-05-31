@@ -1,84 +1,141 @@
-"use server";
-import UserLayout from "@/components/layout/UserLayout";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { createClient } from "@/utils/supabase/server";
-import { ArrowBigDownDash, ArrowBigUpDash, MessageSquareText } from "lucide-react";
-export default async function DetailForumPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("threads")
-    .select(`
-      *
-    `)
-    .eq("slug", slug) 
-    .single(); 
-    
-  console.log("data", data);
-  
+import UserLayout from "@/components/layout/UserLayout"
+import { createClient } from "@/utils/supabase/server"
+import { notFound } from "next/navigation"
+import ForumDetailClient from "./forum-detail-client"
+
+// Function to fetch thread data with comments
+async function getThreadData(id: string) {
+  const supabase = await createClient()
+
+  try {
+    // Fetch thread with author, category, and tags
+    const { data: thread, error: threadError } = await supabase
+      .from("threads")
+      .select(`
+        *,
+        author:author_id (
+          id,
+          full_name,
+          avatar_url
+        ),
+        category:category_id (
+          id,
+          name
+        ),
+        thread_tags (
+          tag:tag_id (
+            id,
+            name
+          )
+        )
+      `)
+      .eq("id", id)
+      .single()
+
+    if (threadError || !thread) {
+      console.error("Error fetching thread:", threadError)
+      return null
+    }
+
+    // Fetch comments for this thread
+    const { data: comments, error: commentsError } = await supabase
+      .from("comment")
+      .select(`
+        *,
+        author:author_id (
+          id,
+          full_name,
+          avatar_url
+        )
+      `)
+      .eq("post_id", id)
+      .order("created_at", { ascending: true })
+
+    if (commentsError) {
+      console.error("Error fetching comments:", commentsError)
+    }
+
+    // Increment view count
+    await supabase
+      .from("threads")
+      .update({ view_count: (thread.view_count || 0) + 1 })
+      .eq("id", id)
+
+    return {
+      thread,
+      comments: comments || [],
+    }
+  } catch (error) {
+    console.error("Error fetching thread data:", error)
+    return null
+  }
+}
+
+// Get user votes
+async function getUserVotes(userId: string, threadId: string) {
+  const supabase = await createClient()
+
+  // Step 1: Ambil semua comment id di thread ini
+  const { data: commentIdsData, error: commentError } = await supabase
+    .from("comment")
+    .select("id")
+    .eq("post_id", threadId)
+
+  if (commentError) {
+    console.error("Error fetching comment IDs:", commentError)
+    return []
+  }
+
+  const commentIds = commentIdsData?.map((c) => c.id) || []
+
+  // Step 2: Ambil semua vote user untuk thread dan comments tersebut
+  let query = await supabase
+    .from("votes")
+    .select("*")
+    .eq("user_id", userId)
+
+  // Tambahkan kondisi OR: vote di thread ATAU comment dalam thread
+  if (commentIds.length > 0) {
+    query = query.or(`thread_id.eq.${threadId},comment_id.in.(${commentIds.join(",")})`)
+  } else {
+    // Jika tidak ada comment, hanya cari vote di thread
+    query = query.eq("thread_id", threadId)
+  }
+
+  const { data: votes, error } = await query
+
+  if (error) {
+    console.error("Error fetching votes:", error)
+    return []
+  }
+
+  return votes || []
+}
+
+export default async function ThreadDetailPage({ params }: { params: { id: string } }) {
+  // Destructure params after awaiting
+  const { id } = await params
+
+  // Get thread data
+  const threadData = await getThreadData(id)
+
+  if (!threadData) {
+    notFound()
+  }
+
+  // Get current user
+  const supabase = await createClient()
+  const { data: userData } = await supabase.auth.getUser()
+  const currentUser = userData?.user
+
+  // Get user votes if logged in
+  const userVotes = currentUser ? await getUserVotes(currentUser.id, id) : []
+
   return (
     <UserLayout>
       <div className="container p-8 bg-white rounded-lg h-screen overflow-y-auto">
-
-        {/* Title */}
-        <h1 className="text-4xl font-bold mb-4 font-jakarta">General Discussion</h1>
-
-        {/* Discussion */}
-        <div className="mt-10 flex flex-col gap-6">
-
-          {/* Discussion Card */}
-          <div className="px-5 py-7 bg-white rounded-lg border border-gray-200 mb-6">
-
-            {/* Header */}
-            <div className="header flex items-start justify-between mb-4">
-              {/* Profile */}
-              <div className="flex items-center gap-4">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src="./image.png"/>
-                </Avatar>
-                <div className="flex flex-col font-jakarta -pace-y-1">
-                  {/* <h2 className="text-lg font-semibold text-gray-800">{data.}</h2> */}
-                  <p className="text-sm font-semibold text-gray-500">Institut Teknologi Kalimantan</p>
-                </div>
-              </div>
-              {/* Date */}
-              <div className="font-geist text-sm font-medium text-gray-500">
-                <p>Posted on: 12/10/2023</p>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="flex flex-col gap-4 my-10">
-              <h3 className="text-3xl font-bold font-jakarta">Cara menang hackathon</h3>
-              <p className="font-geist text-base font-medium">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed quis mi  tristique, molestie lacus ut, mattis sapien. Phasellus porttitor purus  est. Sed pellentesque mattis libero, in cursus justo gravida tincidunt.  Vivamus rutrum, velit nec vulputate tempor, lectus justo consectetur  libero, a porttitor massa urna facilisis lacus.A Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed quis mi  tristique, molestie lacus ut, mattis sapien. Phasellus porttitor purus  est. Sed pellentesque mattis libero, in cursus justo gravida tincidunt.  Vivamus rutrum, velit nec vulputate tempor, lectus justo consectetur  libero, a porttitor massa urna facilisis lacus.A</p>
-            </div>
-
-            {/* Action */}
-            <div className="flex items-center justify-between font-jakarta">
-
-              {/* Vote */}
-              <div className="flex items-center gap-4">
-                <button className="flex items-center font-semibold gap-4">
-                  <ArrowBigUpDash color="#4755F1" />
-                  Upvote
-                </button>
-                <button className="flex items-center font-semibold gap-4">
-                  <ArrowBigDownDash color="#FF0000" />
-                  Downvote
-                </button>
-              </div>
-
-              {/* Reply */}
-              <button className="flex items-center font-semibold gap-2">
-                <MessageSquareText size={20} />
-                  Balas
-              </button>
-             
-            </div>
-          </div>
-
-        </div>
+        <ForumDetailClient threadData={threadData} currentUser={currentUser} initialVotes={userVotes} />
       </div>
     </UserLayout>
-  );
+  )
 }

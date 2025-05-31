@@ -63,7 +63,7 @@ export async function upload(formData: FormData) {
   }
 
   // 6. Dapatkan URL File
-  const { data: urlData } = await supabase.storage
+  const { data: urlData } = supabase.storage
     .from('library-materials')
     .getPublicUrl(filePath)
 
