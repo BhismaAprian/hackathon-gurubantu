@@ -1,4 +1,4 @@
-"use client"  
+"use client";
 
 import {
   ArchiveRestore,
@@ -9,11 +9,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth" // or wherever your auth hook is
+import { useAuth } from "@/hooks/use-auth"; // or wherever your auth hook is
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   return (
     <aside className="w-full hidden lg:block lg:max-w-[22rem] bg-white h-screen sticky top-0 z-50 border-r border-gray-200 font-jakarta">
@@ -30,7 +30,7 @@ export default function Sidebar() {
             <Link
               href="/dashboard"
               className={`text-sm font-semibold flex items-center gap-4 px-4 py-3 rounded-md ${
-                pathname === "/dashboard"
+                pathname.startsWith("/dashboard")
                   ? "bg-[#084734] text-[#CEF17B]"
                   : "text-[#084734]"
               }`}
@@ -42,7 +42,7 @@ export default function Sidebar() {
             <Link
               href="/library"
               className={`text-sm font-semibold flex items-center gap-4 px-4 py-3 rounded-md ${
-                pathname === "/library"
+                pathname.startsWith("/library")
                   ? "bg-[#084734] text-[#CEF17B]"
                   : "text-[#084734]"
               }`}
@@ -54,7 +54,7 @@ export default function Sidebar() {
             <Link
               href="/profile"
               className={`text-sm font-semibold flex items-center gap-4 px-4 py-3 rounded-md ${
-                pathname === "/profile"
+                pathname.startsWith("/profile")
                   ? "bg-[#084734] text-[#CEF17B]"
                   : "text-[#084734]"
               }`}
@@ -78,18 +78,22 @@ export default function Sidebar() {
           <div className="mt-5 flex flex-col gap-2">
             <Link
               href="/forum"
-              className="text-[#084734] text-sm font-semibold flex items-center gap-4 px-4 py-3 rounded-md"
+              className={`text-sm font-semibold flex items-center gap-4 px-4 py-3 rounded-md ${
+                pathname.startsWith("/forum")
+                  ? "bg-[#084734] text-[#CEF17B]"
+                  : "text-[#084734]"
+              }`}
             >
               <MessageSquareText size={20} />
               Forum Diskusi
             </Link>
-            <Link
+            {/* <Link
               href="/"
               className="text-[#084734] text-sm font-semibold flex items-center gap-4 px-4 py-4 rounded-md"
             >
               <ArchiveRestore size={20} />
               Riwayat Diskusi
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>
