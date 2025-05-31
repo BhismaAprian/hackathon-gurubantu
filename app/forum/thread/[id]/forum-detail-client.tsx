@@ -324,13 +324,13 @@ export default function ForumDetailClient({ threadData, currentUser, initialVote
             <div className="flex items-center gap-4 font-jakarta">
               <VoteButtons targetId={comment.id} targetType="comment" />
 
-              <button
+              {/* <button
                 onClick={() => setReplyingTo(comment.id)}
                 className="flex items-center font-semibold gap-2 text-sm text-gray-600 hover:text-gray-800"
               >
                 <MessageSquareText size={16} />
                 Balas
-              </button>
+              </button> */}
 
               {/* Mark as solution button (only for thread author) */}
               {currentUser?.id === thread.author_id && !thread.is_solved && !comment.is_solution && (
